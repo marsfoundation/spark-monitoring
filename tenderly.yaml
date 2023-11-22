@@ -1,0 +1,12 @@
+account_id: ""
+actions:
+  phoenixlabs/sparklend:
+    runtime: v1
+    sources: actions
+    specs:
+      example:
+        description: This is just an example, but you can publish this action.
+        function: example:blockHelloWorldFn
+        trigger:
+          type: block
+project_slug: ""
