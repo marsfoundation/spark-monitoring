@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { TenderlyFork, EthersOnTenderlyFork } from '../types';
+import { TenderlyFork, EthersOnTenderlyFork } from './types';
 
 const ethers = require('ethers');
 

@@ -7,7 +7,10 @@
         "outDir": "out",
         "sourceMap": true,
         "strict": true,
-        "target": "es2020"
+        "target": "es2020",
+        "resolveJsonModule": true,
+        "moduleResolution": "node",
+        "esModuleInterop": true
     },
     "include": [
         "**/*"
