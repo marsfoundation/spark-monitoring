@@ -51,8 +51,8 @@ export const action1: ActionFn = async (context: Context, event: Event) => {
 	const fork = await createTenderlyFork(token, { network_id: '1' })
 
 	const healthCheckerFactory = await hardhat.ethers.getContractFactory(
-	"SparkLendHealthChecker",
-	fork.provider.getSigner()
+		"Lock",
+		fork.provider.getSigner()
 	);
 
 	const healthChecker = await healthCheckerFactory.deploy();

@@ -1,4 +1,4 @@
-import { JsonRpcProvider } from 'ethers';
+import { JsonRpcProvider } from '@ethersproject/providers';
 
 export type TenderlyFork = {
     block_number?: number;
@@ -7,7 +7,7 @@ export type TenderlyFork = {
   };
 
 export type EthersOnTenderlyFork = {
-id: number;
-provider: JsonRpcProvider;
-blockNumber: number;
+  id: number;
+  provider: JsonRpcProvider;
+  blockNumber: number;
 };
