@@ -5,7 +5,7 @@ import {
 	TransactionEvent,
 } from '@tenderly/actions';
 
-// import { createTenderlyFork } from './fork';
+import { createTenderlyFork } from './fork';
 
 import PoolAbi from './abis/pool-abi.json';
 
@@ -43,6 +43,10 @@ export const action1: ActionFn = async (context: Context, event: Event) => {
 	users = [...new Set(users)];
 
 	console.log({users});
+
+	const token = await context.secrets.get('TENDERLY_ACCESS_KEY');
+
+	await createTenderlyFork(token, { network_id: '1' })
 }
 
 // pool.interface.parseLog(log).name == "MintUnbacked" ||
