@@ -8,7 +8,6 @@
     },
     "dependencies": {
         "@tenderly/actions": "^0.0.8",
-        "ethers": "^6.8.1",
         "hardhat": "^2.19.1"
     },
     "private": true
