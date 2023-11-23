@@ -33,7 +33,7 @@ actions:
 
       monitor-sparklend:
         description: Example Web3 Action that logs MKR event data
-        function: monitor-sparklend:action1
+        function: src/monitor-sparklend:action1
         trigger:
           type: transaction
           transaction:
