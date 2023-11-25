@@ -51,88 +51,6 @@ export async function simulateTransactionBundle(
 ): Promise<any> { // Adjust return type as needed
   console.log("ENTERED FUNCTION");
 
-  // const projectUrl = `account/phoenixlabs/project/sparklend`;
-
-  // const axiosOnTenderly = axios.create({
-  //   baseURL: 'https://api.tenderly.co/api/v1',
-  //   headers: {
-  //     'X-Access-Key': tenderlyToken,
-  //     'Content-Type': 'application/json',
-  //   },
-  // });
-
-  // // Perform the POST request
-  // try {
-  //   console.log({transactionParams})
-  //   const response = await axiosOnTenderly.post(`${projectUrl}/simulate`, transactionParams);
-  //   console.log("Transaction Simulation Successful", response.data);
-  //   return response.data;
-  // } catch (error) {
-  //   console.error("Error in Transaction Simulation", error);
-  //   throw error;
-  // }
-
-  // SUCCESS
-  // const resp = await axios.post(
-  //   `https://api.tenderly.co/api/v1/account/phoenixlabs/project/sparklend/simulate`,
-  //   // the transaction
-  //   {
-  //     // Simulation Configuration
-  //     save: false, // if true simulation is saved and shows up in the dashboard
-  //     save_if_fails: false, // if true, reverting simulations show up in the dashboard
-  //     simulation_type: 'full', // full or quick (full is default)
-
-  //     network_id: '1', // network to simulate on
-
-  //     // Standard EVM Transaction object
-  //     from: '0xdc6bdc37b2714ee601734cf55a05625c9e512461',
-  //     to: '0x6b175474e89094c44da98b954eedeac495271d0f',
-  //     input:
-  //       '0x095ea7b3000000000000000000000000f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1000000000000000000000000000000000000000000000000000000000000012b',
-  //     gas: 8000000,
-  //     gas_price: 0,
-  //     value: 0,
-  //   },
-  //   {
-  //     headers: {
-  //       'X-Access-Key': tenderlyToken as string,
-  //     },
-  //   },
-  // );
-
-
-  // SUCCESS
-  // const resp = await axios.post(
-  //     `https://api.tenderly.co/api/v1/account/phoenixlabs/project/sparklend/simulate-bundle`,
-  //     // the transaction
-  //     {
-  //       simulations: [
-  //         {
-  //           // Simulation Configuration
-  //           save: false, // if true simulation is saved and shows up in the dashboard
-  //           save_if_fails: false, // if true, reverting simulations show up in the dashboard
-  //           simulation_type: 'full', // full or quick (full is default)
-
-  //           network_id: '1', // network to simulate on
-
-  //           // Standard EVM Transaction object
-  //           from: '0xdc6bdc37b2714ee601734cf55a05625c9e512461',
-  //           to: '0x6b175474e89094c44da98b954eedeac495271d0f',
-  //           input:
-  //             '0x095ea7b3000000000000000000000000f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1000000000000000000000000000000000000000000000000000000000000012b',
-  //           gas: 8000000,
-  //           gas_price: 0,
-  //           value: 0
-  //         }
-  //       ],
-  //     },
-  //     {
-  //       headers: {
-  //         'X-Access-Key': tenderlyToken as string,
-  //       },
-  //     },
-  //   );
-
   const fullTransactionData = transactionBundle.map(tx => {
     return {
       // Simulation Configuration
@@ -154,7 +72,6 @@ export async function simulateTransactionBundle(
 
   const resp = await axios.post(
     `https://api.tenderly.co/api/v1/account/phoenixlabs/project/sparklend/simulate-bundle`,
-    // the transaction
     {
       simulations: fullTransactionData
     },
