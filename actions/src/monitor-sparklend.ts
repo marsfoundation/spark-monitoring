@@ -5,13 +5,13 @@ import {
 	TransactionEvent,
 } from '@tenderly/actions';
 
-import { createTenderlyFork } from './fork';
+import { simulateTransactionBundle } from './apis';
 
-import PoolAbi from '../abis/pool-abi.json';
+import PoolAbi from '../jsons/pool-abi.json';
 
 const ethers = require('ethers');
 
-const hardhat = require('hardhat');
+// const hardhat = require('hardhat');
 
 export const action1: ActionFn = async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent;
@@ -48,20 +48,15 @@ export const action1: ActionFn = async (context: Context, event: Event) => {
 
 	const token = await context.secrets.get('TENDERLY_ACCESS_KEY');
 
-	const fork = await createTenderlyFork(token, { network_id: '1' })
-
-	const healthCheckerFactory = await hardhat.ethers.getContractFactory(
-		"Lock",
-		fork.provider.getSigner()
-	);
-
-	const healthChecker = await healthCheckerFactory.deploy();
-
-	await healthChecker.deployed();
-
-	console.log("HealthChecker deployed to:", healthChecker.address);
-	console.log("HealthChecker deployed by:", healthChecker.deployTransaction.from);
-	console.log("HealthChecker check", await healthChecker.runChecks());
+	await simulateTransactionBundle(token, [
+		{
+			// Standard EVM Transaction object
+			from: '0xdc6bdc37b2714ee601734cf55a05625c9e512461',
+			to: '0x6b175474e89094c44da98b954eedeac495271d0f',
+			input:
+			  '0x095ea7b3000000000000000000000000f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1000000000000000000000000000000000000000000000000000000000000012b',
+		  }
+	]);
 }
 
 // pool.interface.parseLog(log).name == "MintUnbacked" ||
