@@ -1,0 +1,3 @@
+[submodule "lib/sparklend-health-checker"]
+	path = lib/sparklend-health-checker
+	url = git@github.com:marsfoundation/sparklend-health-checker.git
