@@ -69,6 +69,8 @@ export async function simulateTransactionBundle(
     }
   })
 
+  console.log({tenderlyToken})
+
   const response = await axios.post(
     `https://api.tenderly.co/api/v1/account/phoenixlabs/project/sparklend/simulate-bundle`,
     {
@@ -81,6 +83,8 @@ export async function simulateTransactionBundle(
       },
     },
   );
+
+
 
   console.log(JSON.stringify(response.data, null, 2))
 }
