@@ -9,9 +9,9 @@ import { simulateTransactionBundle } from './apis';
 
 import PoolAbi from '../jsons/pool-abi.json';
 
-const ethers = require('ethers');
+import { deployedBytecode as HealthCheckerBytecode } from '../jsons/SparkLendHealthChecker.json';
 
-// const hardhat = require('hardhat');
+const ethers = require('ethers');
 
 export const action1: ActionFn = async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent;
@@ -44,8 +44,6 @@ export const action1: ActionFn = async (context: Context, event: Event) => {
 	// Remove duplicates
 	users = [...new Set(users)];
 
-	console.log({users});
-
 	const token = await context.secrets.get('TENDERLY_ACCESS_KEY');
 
 	await simulateTransactionBundle(token, [
@@ -55,6 +53,12 @@ export const action1: ActionFn = async (context: Context, event: Event) => {
 			to: '0x6b175474e89094c44da98b954eedeac495271d0f',
 			input:
 			  '0x095ea7b3000000000000000000000000f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1000000000000000000000000000000000000000000000000000000000000012b',
-		  }
-	]);
+		},
+	],
+		{
+			"0xe2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2": {
+				code: HealthCheckerBytecode.object,
+			}
+		}
+	);
 }

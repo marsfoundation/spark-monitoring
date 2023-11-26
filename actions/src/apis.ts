@@ -47,7 +47,8 @@ export async function createTenderlyFork(
 
 export async function simulateTransactionBundle(
   tenderlyToken: string,
-  transactionBundle: any[]
+  transactionBundle: any[],
+  simulationConfig?: any
 ): Promise<any> { // Adjust return type as needed
   console.log("ENTERED FUNCTION");
 
@@ -68,12 +69,11 @@ export async function simulateTransactionBundle(
     }
   })
 
-  console.log({fullTransactionData})
-
-  const resp = await axios.post(
+  const response = await axios.post(
     `https://api.tenderly.co/api/v1/account/phoenixlabs/project/sparklend/simulate-bundle`,
     {
-      simulations: fullTransactionData
+      simulations: fullTransactionData,
+      simulationConfig
     },
     {
       headers: {
@@ -82,5 +82,5 @@ export async function simulateTransactionBundle(
     },
   );
 
-  console.log({resp})
+  console.log(JSON.stringify(response.data, null, 2))
 }
