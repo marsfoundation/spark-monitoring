@@ -39,6 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var apis_1 = require("./apis");
 var dotenv = require("dotenv");
 var SparkLendHealthChecker_json_1 = require("../jsons/SparkLendHealthChecker.json");
+var ethers = require('ethers');
 dotenv.config();
 var main = function () { return __awaiter(void 0, void 0, void 0, function () {
     var token;
@@ -46,13 +47,20 @@ var main = function () { return __awaiter(void 0, void 0, void 0, function () {
         switch (_a.label) {
             case 0:
                 token = process.env.TENDERLY_ACCESS_KEY;
-                console.log({ token: token });
+                console.log({ object: SparkLendHealthChecker_json_1.deployedBytecode.object });
                 return [4 /*yield*/, (0, apis_1.simulateTransactionBundle)(token, [
+                        // {
+                        // 	// Standard EVM Transaction object
+                        // 	from: '0xdc6bdc37b2714ee601734cf55a05625c9e512461',
+                        // 	to: '0x6b175474e89094c44da98b954eedeac495271d0f',
+                        // 	input:
+                        // 	  '0x095ea7b3000000000000000000000000f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1000000000000000000000000000000000000000000000000000000000000012b',
+                        // },
                         {
                             // Standard EVM Transaction object
                             from: '0xdc6bdc37b2714ee601734cf55a05625c9e512461',
-                            to: '0x6b175474e89094c44da98b954eedeac495271d0f',
-                            input: '0x095ea7b3000000000000000000000000f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1000000000000000000000000000000000000000000000000000000000000012b',
+                            to: '0xe2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2',
+                            input: "0x94200de800000000000000000000000000000000000000000000000000000000" // bytes4(keccak256("runChecks()"));
                         },
                     ], {
                         "0xe2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2": {
