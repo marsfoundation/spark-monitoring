@@ -14,8 +14,8 @@ const main = async() => {
 
 	const DATA_PROVIDER_ADDRESS = "0xFc21d6d146E6086B8359705C8b28512a983db0cb";
 
-	// Log out all keys in ethers
-	console.log(Object.keys(ethers));
+	// // Log out all keys in ethers
+	// console.log(Object.keys(ethers));
 
 	const provider = new ethers.JsonRpcProvider(process.env.ETH_RPC_URL!);
 
@@ -39,7 +39,7 @@ const main = async() => {
 		"Value 12"
 	];
 
-	console.dir(Object.keys(ethers), {depth: null});
+	// console.dir(Object.keys(ethers), {depth: null});
 
   	// Combine labels and values into an array of objects
   	const formattedData = rawOutput.map((value, index) => ({
@@ -47,7 +47,7 @@ const main = async() => {
 		value: BigInt(value).toString(),
   	}));
 
-  	console.log(formattedData);
+  	// console.log(formattedData);
 
 	const url = 'https://events.pagerduty.com/v2/enqueue';
 	const headers = {
@@ -63,9 +63,13 @@ const main = async() => {
 	  event_action: 'trigger',
 	};
 
-	const response = await axios.post(url, data, { headers });
+	// const pagerDutyResponse = await axios.post(url, data, { headers });
 
-	console.log(response);
+	// console.log(pagerDutyResponse.data);
+
+	const slackResponse = await axios.post(process.env.SLACK_WEBHOOK_URL!, { text: `value: ${formattedData[0].value}` });
+
+	console.log(slackResponse.data);
 }
 
 main();

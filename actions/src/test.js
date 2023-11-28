@@ -42,15 +42,13 @@ var DataProviderAbi = require('../jsons/data-provider.json');
 var ethers = require('ethers');
 dotenv.config();
 var main = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var token, pagerDuty, DATA_PROVIDER_ADDRESS, provider, dataProvider, rawOutput, labels, formattedData, url, headers, data, response;
+    var token, pagerDuty, DATA_PROVIDER_ADDRESS, provider, dataProvider, rawOutput, labels, formattedData, url, headers, data, slackResponse;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 token = process.env.TENDERLY_ACCESS_KEY;
                 pagerDuty = process.env.PAGERDUTY_ACCESS_KEY;
                 DATA_PROVIDER_ADDRESS = "0xFc21d6d146E6086B8359705C8b28512a983db0cb";
-                // Log out all keys in ethers
-                console.log(Object.keys(ethers));
                 provider = new ethers.JsonRpcProvider(process.env.ETH_RPC_URL);
                 dataProvider = new ethers.Contract(DATA_PROVIDER_ADDRESS, DataProviderAbi, provider);
                 return [4 /*yield*/, dataProvider.getReserveData("0x6b175474e89094c44da98b954eedeac495271d0f")];
@@ -70,12 +68,10 @@ var main = function () { return __awaiter(void 0, void 0, void 0, function () {
                     "Value 11",
                     "Value 12"
                 ];
-                console.dir(Object.keys(ethers), { depth: null });
                 formattedData = rawOutput.map(function (value, index) { return ({
                     label: labels[index],
                     value: BigInt(value).toString(),
                 }); });
-                console.log(formattedData);
                 url = 'https://events.pagerduty.com/v2/enqueue';
                 headers = {
                     'Content-Type': 'application/json',
@@ -89,10 +85,10 @@ var main = function () { return __awaiter(void 0, void 0, void 0, function () {
                     routing_key: pagerDuty,
                     event_action: 'trigger',
                 };
-                return [4 /*yield*/, axios.post(url, data, { headers: headers })];
+                return [4 /*yield*/, axios.post(process.env.SLACK_WEBHOOK_URL, { text: "value: ".concat(formattedData[0].value) })];
             case 2:
-                response = _a.sent();
-                console.log(response);
+                slackResponse = _a.sent();
+                console.log(slackResponse.data);
                 return [2 /*return*/];
         }
     });
