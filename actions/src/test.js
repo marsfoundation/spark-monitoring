@@ -36,39 +36,63 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var apis_1 = require("./apis");
 var dotenv = require("dotenv");
-var SparkLendHealthChecker_json_1 = require("../jsons/SparkLendHealthChecker.json");
+var axios = require('axios');
+var DataProviderAbi = require('../jsons/data-provider.json');
 var ethers = require('ethers');
 dotenv.config();
 var main = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var token;
+    var token, pagerDuty, DATA_PROVIDER_ADDRESS, provider, dataProvider, rawOutput, labels, formattedData, url, headers, data, response;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 token = process.env.TENDERLY_ACCESS_KEY;
-                console.log({ object: SparkLendHealthChecker_json_1.deployedBytecode.object });
-                return [4 /*yield*/, (0, apis_1.simulateTransactionBundle)(token, [
-                        // {
-                        // 	// Standard EVM Transaction object
-                        // 	from: '0xdc6bdc37b2714ee601734cf55a05625c9e512461',
-                        // 	to: '0x6b175474e89094c44da98b954eedeac495271d0f',
-                        // 	input:
-                        // 	  '0x095ea7b3000000000000000000000000f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1000000000000000000000000000000000000000000000000000000000000012b',
-                        // },
-                        {
-                            // Standard EVM Transaction object
-                            from: '0xdc6bdc37b2714ee601734cf55a05625c9e512461',
-                            to: '0xe2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2',
-                            input: "0x94200de800000000000000000000000000000000000000000000000000000000" // bytes4(keccak256("runChecks()"));
-                        },
-                    ], {
-                        "0xe2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2": {
-                            code: SparkLendHealthChecker_json_1.deployedBytecode.object,
-                        }
-                    })];
+                pagerDuty = process.env.PAGERDUTY_ACCESS_KEY;
+                DATA_PROVIDER_ADDRESS = "0xFc21d6d146E6086B8359705C8b28512a983db0cb";
+                // Log out all keys in ethers
+                console.log(Object.keys(ethers));
+                provider = new ethers.JsonRpcProvider(process.env.ETH_RPC_URL);
+                dataProvider = new ethers.Contract(DATA_PROVIDER_ADDRESS, DataProviderAbi, provider);
+                return [4 /*yield*/, dataProvider.getReserveData("0x6b175474e89094c44da98b954eedeac495271d0f")];
             case 1:
-                _a.sent();
+                rawOutput = _a.sent();
+                labels = [
+                    "Value 1",
+                    "Value 2",
+                    "Value 3",
+                    "Value 4",
+                    "Value 5",
+                    "Value 6",
+                    "Value 7",
+                    "Value 8",
+                    "Value 9",
+                    "Value 10",
+                    "Value 11",
+                    "Value 12"
+                ];
+                console.dir(Object.keys(ethers), { depth: null });
+                formattedData = rawOutput.map(function (value, index) { return ({
+                    label: labels[index],
+                    value: BigInt(value).toString(),
+                }); });
+                console.log(formattedData);
+                url = 'https://events.pagerduty.com/v2/enqueue';
+                headers = {
+                    'Content-Type': 'application/json',
+                };
+                data = {
+                    payload: {
+                        summary: formattedData[0].value,
+                        severity: 'critical',
+                        source: 'Alert source',
+                    },
+                    routing_key: pagerDuty,
+                    event_action: 'trigger',
+                };
+                return [4 /*yield*/, axios.post(url, data, { headers: headers })];
+            case 2:
+                response = _a.sent();
+                console.log(response);
                 return [2 /*return*/];
         }
     });

@@ -1,8 +1,8 @@
-import { simulateTransactionBundle } from './apis';
-
 import * as dotenv from "dotenv";
 
-import { deployedBytecode as HealthCheckerBytecode } from '../jsons/SparkLendHealthChecker.json';
+const axios = require('axios');
+
+const DataProviderAbi = require('../jsons/data-provider.json');
 
 const ethers = require('ethers');
 
@@ -10,30 +10,62 @@ dotenv.config();
 
 const main = async() => {
 	const token = process.env.TENDERLY_ACCESS_KEY!;
+	const pagerDuty = process.env.PAGERDUTY_ACCESS_KEY!;
 
-    console.log({object: HealthCheckerBytecode.object})
+	const DATA_PROVIDER_ADDRESS = "0xFc21d6d146E6086B8359705C8b28512a983db0cb";
 
-	await simulateTransactionBundle(token, [
-		// {
-		// 	// Standard EVM Transaction object
-		// 	from: '0xdc6bdc37b2714ee601734cf55a05625c9e512461',
-		// 	to: '0x6b175474e89094c44da98b954eedeac495271d0f',
-		// 	input:
-		// 	  '0x095ea7b3000000000000000000000000f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1000000000000000000000000000000000000000000000000000000000000012b',
-		// },
-        {
-			// Standard EVM Transaction object
-			from: '0xdc6bdc37b2714ee601734cf55a05625c9e512461',
-			to: '0xe2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2',
-			input: "0x94200de800000000000000000000000000000000000000000000000000000000"  // bytes4(keccak256("runChecks()"));
-		},
-	],
-		{
-			"0xe2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2": {
-				code: HealthCheckerBytecode.object,
-			}
-		}
-	);
+	// Log out all keys in ethers
+	console.log(Object.keys(ethers));
+
+	const provider = new ethers.JsonRpcProvider(process.env.ETH_RPC_URL!);
+
+	const dataProvider = new ethers.Contract(DATA_PROVIDER_ADDRESS, DataProviderAbi, provider);
+
+	const rawOutput: bigint[] = await dataProvider.getReserveData("0x6b175474e89094c44da98b954eedeac495271d0f");
+
+	// Define labels for each value
+	const labels = [
+		"Value 1",
+		"Value 2",
+		"Value 3",
+		"Value 4",
+		"Value 5",
+		"Value 6",
+		"Value 7",
+		"Value 8",
+		"Value 9",
+		"Value 10",
+		"Value 11",
+		"Value 12"
+	];
+
+	console.dir(Object.keys(ethers), {depth: null});
+
+  	// Combine labels and values into an array of objects
+  	const formattedData = rawOutput.map((value, index) => ({
+		label: labels[index],
+		value: BigInt(value).toString(),
+  	}));
+
+  	console.log(formattedData);
+
+	const url = 'https://events.pagerduty.com/v2/enqueue';
+	const headers = {
+	  'Content-Type': 'application/json',
+	};
+	const data = {
+	  payload: {
+		summary: formattedData[0].value,
+		severity: 'critical',
+		source: 'Alert source',
+	  },
+	  routing_key: pagerDuty,
+	  event_action: 'trigger',
+	};
+
+	const response = await axios.post(url, data, { headers });
+
+	console.log(response);
 }
 
 main();
