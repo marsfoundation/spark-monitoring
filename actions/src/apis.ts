@@ -55,7 +55,7 @@ export async function simulateTransactionBundle(
   const fullTransactionData = transactionBundle.map(tx => {
     return {
       // Simulation Configuration
-      save: false, // if true simulation is saved and shows up in the dashboard
+      save: true, // if true simulation is saved and shows up in the dashboard
       save_if_fails: false, // if true, reverting simulations show up in the dashboard
       simulation_type: 'full', // full or quick (full is default)
 

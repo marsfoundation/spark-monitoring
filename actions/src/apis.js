@@ -94,7 +94,7 @@ function simulateTransactionBundle(tenderlyToken, transactionBundle, simulationC
                     fullTransactionData = transactionBundle.map(function (tx) {
                         return __assign({ 
                             // Simulation Configuration
-                            save: false, save_if_fails: false, simulation_type: 'full', network_id: '1', 
+                            save: true, save_if_fails: false, simulation_type: 'full', network_id: '1', 
                             // Standard EVM Transaction object
                             gas: 8000000, gas_price: 0, value: 0 }, tx);
                     });
