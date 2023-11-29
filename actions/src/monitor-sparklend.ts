@@ -134,6 +134,97 @@ export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Ev
 	}
 }
 
+export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: Context, event: Event) => {
+	let txEvent = event as TransactionEvent;
+
+	// 1. Define contracts
+
+	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B";
+	const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f";
+
+	const url = await context.secrets.get('ETH_RPC_URL');
+
+	const provider = new ethers.providers.JsonRpcProvider(url);
+
+	const healthChecker = new ethers.Contract(HEALTH_CHECKER, healthCheckerAbi, provider);
+
+	const getAllReservesAssetLiabilityResponse = await healthChecker.getAllReservesAssetLiability();
+
+	var messages = [];
+
+	for (const reserveInfo of getAllReservesAssetLiabilityResponse) {
+		if (reserveInfo.reserve === DAI) {
+
+		}
+
+		const diff = BigInt(reserveInfo.assets) - BigInt(reserveInfo.liabilities);
+
+		// Check that the absolute value of the difference is less than 1000
+		// if (diff < 1000n && diff > -1000n) {
+		if (diff > 100000000000000000000000000000000000n ) {
+			return;
+		}
+
+		messages.push(formatAssetLiabilityAlertMessage({...reserveInfo, diff}, txEvent));
+	}
+
+	const slackWebhookUrl = await context.secrets.get('SLACK_WEBHOOK_URL');
+
+	const slackResponses = await Promise.all(messages.map(async (message) => {
+		await axios.post(slackWebhookUrl, { text: message });
+	}))
+
+	for (const slackResponse of slackResponses) {
+		console.log(slackResponse);
+	}
+
+	const testPagerDuty = await context.secrets.get('TEST_PAGERDUTY');
+
+	if (testPagerDuty === 'false') {
+		console.log("Test PagerDuty is false, not sending PagerDuty alerts");
+		return;
+	}
+
+	const pagerDutyRoutingKey = await context.secrets.get('PAGERDUTY_ROUTING_KEY');
+
+	const headers = {
+	  'Content-Type': 'application/json',
+	};
+
+	const data = {
+	  payload: {
+		summary: "",
+		severity: 'critical',
+		source: 'Alert source',
+	  },
+	  routing_key: pagerDutyRoutingKey,
+	  event_action: 'trigger',
+	};
+
+	const pagerDutyResponses = await Promise.all(messages.map(async (message) => {
+		data.payload.summary = message;
+		await axios.post('https://events.pagerduty.com/v2/enqueue', data, { headers });
+	}));
+
+	for (const pagerDutyResponse of pagerDutyResponses) {
+		console.log(pagerDutyResponse);
+	}
+}
+
+const formatAssetLiabilityAlertMessage = (reserveInfo: any, txEvent: any) => {
+	return `
+\`\`\`
+🚨🚨🚨 ASSET/LIABILITY ALERT 🚨🚨🚨
+Reserve ${reserveInfo.reserve} has a difference between assets and liabilities of ${BigInt(reserveInfo.diff).toString()}.
+
+Discovered at block ${txEvent.blockNumber}.
+
+Assets:      ${BigInt(reserveInfo.assets).toString()}
+Liabilities: ${BigInt(reserveInfo.liabilities).toString()}
+\`\`\`
+	`
+}
+
 const formatUserHealthAlertMessage = (userHealth: any, txEvent: TransactionEvent) => {
 	return `
 \`\`\`

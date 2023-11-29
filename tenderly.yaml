@@ -31,8 +31,8 @@ actions:
       #           # Transaction must have been sent to MKR address
       #           to: 0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2
 
-      monitor-sparklend:
-        description: Action that deploys a health checker against a fork and uses it to check SparkLend protocol health
+      monitor-user-health:
+        description: Checks user's health factors after they interact with the protocol.
         function: src/monitor-sparklend:getUserInfoSparkLend
         trigger:
           type: transaction
@@ -46,4 +46,14 @@ actions:
                 status: success
                 # Transaction must have been sent to Pool address
                 to: 0xC13e21B648A5Ee794902342038FF3aDAB66BE987
+
+      monitor-asset-liabilities:
+        description: Checks asset liability matching for each reserve.
+        function: src/monitor-sparklend:getAllReservesAssetLiabilitySparkLend
+        trigger:
+          type: block
+          block:
+            network:
+              - 1
+            blocks: 100
 
