@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 
-const axios = require('axios');
+// const axios = require('axios');
 
 import { abi as healthCheckerAbi } from '../jsons/SparkLendHealthChecker.json';
 
@@ -9,8 +9,8 @@ const ethers = require('ethers');
 dotenv.config();
 
 const main = async() => {
-	const token = process.env.TENDERLY_ACCESS_KEY!;
-	const pagerDuty = process.env.PAGERDUTY_ACCESS_KEY!;
+	// const token = process.env.TENDERLY_ACCESS_KEY!;
+	// const pagerDuty = process.env.PAGERDUTY_ACCESS_KEY!;
 
 	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B";
 	const WHALE_ADDRESS = "0xf8dE75c7B95edB6f1E639751318f117663021Cf0";

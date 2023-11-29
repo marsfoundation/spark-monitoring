@@ -33,7 +33,7 @@ actions:
 
       monitor-sparklend:
         description: Action that deploys a health checker against a fork and uses it to check SparkLend protocol health
-        function: src/monitor-sparklend:action1
+        function: src/monitor-sparklend:getUserInfoSparkLend
         trigger:
           type: transaction
           transaction:
