@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 
 const axios = require('axios');
 
-const DataProviderAbi = require('../jsons/data-provider.json');
+import { abi as healthCheckerAbi } from '../jsons/SparkLendHealthChecker.json';
 
 const ethers = require('ethers');
 
@@ -12,64 +12,76 @@ const main = async() => {
 	const token = process.env.TENDERLY_ACCESS_KEY!;
 	const pagerDuty = process.env.PAGERDUTY_ACCESS_KEY!;
 
-	const DATA_PROVIDER_ADDRESS = "0xFc21d6d146E6086B8359705C8b28512a983db0cb";
+	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B";
+	const WHALE_ADDRESS = "0xf8dE75c7B95edB6f1E639751318f117663021Cf0";
+	const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 
 	// // Log out all keys in ethers
 	// console.log(Object.keys(ethers));
 
 	const provider = new ethers.JsonRpcProvider(process.env.ETH_RPC_URL!);
 
-	const dataProvider = new ethers.Contract(DATA_PROVIDER_ADDRESS, DataProviderAbi, provider);
+	const healthChecker = new ethers.Contract(HEALTH_CHECKER, healthCheckerAbi, provider);
 
-	const rawOutput: bigint[] = await dataProvider.getReserveData("0x6b175474e89094c44da98b954eedeac495271d0f");
+	const getUserHealthResponse = await healthChecker.getUserHealth(WHALE_ADDRESS);
 
-	// Define labels for each value
-	const labels = [
-		"Value 1",
-		"Value 2",
-		"Value 3",
-		"Value 4",
-		"Value 5",
-		"Value 6",
-		"Value 7",
-		"Value 8",
-		"Value 9",
-		"Value 10",
-		"Value 11",
-		"Value 12"
-	];
+	console.log(getUserHealthResponse)
 
-	// console.dir(Object.keys(ethers), {depth: null});
+	const getReserveAssetLiabilityResponse = await healthChecker.getReserveAssetLiability(WETH);
 
-  	// Combine labels and values into an array of objects
-  	const formattedData = rawOutput.map((value, index) => ({
-		label: labels[index],
-		value: BigInt(value).toString(),
-  	}));
+	console.log(getReserveAssetLiabilityResponse)
 
-  	// console.log(formattedData);
+	const getAllReservesAssetLiabilityResponse = await healthChecker.getAllReservesAssetLiability();
 
-	const url = 'https://events.pagerduty.com/v2/enqueue';
-	const headers = {
-	  'Content-Type': 'application/json',
-	};
-	const data = {
-	  payload: {
-		summary: formattedData[0].value,
-		severity: 'critical',
-		source: 'Alert source',
-	  },
-	  routing_key: pagerDuty,
-	  event_action: 'trigger',
-	};
+	console.log(getAllReservesAssetLiabilityResponse)
 
-	// const pagerDutyResponse = await axios.post(url, data, { headers });
+	// // Define labels for each value
+	// const labels = [
+	// 	"Value 1",
+	// 	"Value 2",
+	// 	"Value 3",
+	// 	"Value 4",
+	// 	"Value 5",
+	// 	"Value 6",
+	// 	"Value 7",
+	// 	"Value 8",
+	// 	"Value 9",
+	// 	"Value 10",
+	// 	"Value 11",
+	// 	"Value 12"
+	// ];
 
-	// console.log(pagerDutyResponse.data);
+	// // console.dir(Object.keys(ethers), {depth: null});
 
-	const slackResponse = await axios.post(process.env.SLACK_WEBHOOK_URL!, { text: `value: ${formattedData[0].value}` });
+  	// // Combine labels and values into an array of objects
+  	// const formattedData = rawOutput.map((value, index) => ({
+	// 	label: labels[index],
+	// 	value: BigInt(value).toString(),
+  	// }));
 
-	console.log(slackResponse.data);
+  	// // console.log(formattedData);
+
+	// const url = 'https://events.pagerduty.com/v2/enqueue';
+	// const headers = {
+	//   'Content-Type': 'application/json',
+	// };
+	// const data = {
+	//   payload: {
+	// 	summary: formattedData[0].value,
+	// 	severity: 'critical',
+	// 	source: 'Alert source',
+	//   },
+	//   routing_key: pagerDuty,
+	//   event_action: 'trigger',
+	// };
+
+	// // const pagerDutyResponse = await axios.post(url, data, { headers });
+
+	// // console.log(pagerDutyResponse.data);
+
+	// const slackResponse = await axios.post(process.env.SLACK_WEBHOOK_URL!, { text: `value: ${formattedData[0].value}` });
+
+	// console.log(slackResponse.data);
 }
 
 main();

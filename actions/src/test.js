@@ -38,57 +38,33 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var dotenv = require("dotenv");
 var axios = require('axios');
-var DataProviderAbi = require('../jsons/data-provider.json');
+var SparkLendHealthChecker_json_1 = require("../jsons/SparkLendHealthChecker.json");
 var ethers = require('ethers');
 dotenv.config();
 var main = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var token, pagerDuty, DATA_PROVIDER_ADDRESS, provider, dataProvider, rawOutput, labels, formattedData, url, headers, data, slackResponse;
+    var token, pagerDuty, HEALTH_CHECKER, WHALE_ADDRESS, WETH, provider, healthChecker, getUserHealthResponse, getReserveAssetLiabilityResponse, getAllReservesAssetLiabilityResponse;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 token = process.env.TENDERLY_ACCESS_KEY;
                 pagerDuty = process.env.PAGERDUTY_ACCESS_KEY;
-                DATA_PROVIDER_ADDRESS = "0xFc21d6d146E6086B8359705C8b28512a983db0cb";
+                HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B";
+                WHALE_ADDRESS = "0xf8dE75c7B95edB6f1E639751318f117663021Cf0";
+                WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
                 provider = new ethers.JsonRpcProvider(process.env.ETH_RPC_URL);
-                dataProvider = new ethers.Contract(DATA_PROVIDER_ADDRESS, DataProviderAbi, provider);
-                return [4 /*yield*/, dataProvider.getReserveData("0x6b175474e89094c44da98b954eedeac495271d0f")];
+                healthChecker = new ethers.Contract(HEALTH_CHECKER, SparkLendHealthChecker_json_1.abi, provider);
+                return [4 /*yield*/, healthChecker.getUserHealth(WHALE_ADDRESS)];
             case 1:
-                rawOutput = _a.sent();
-                labels = [
-                    "Value 1",
-                    "Value 2",
-                    "Value 3",
-                    "Value 4",
-                    "Value 5",
-                    "Value 6",
-                    "Value 7",
-                    "Value 8",
-                    "Value 9",
-                    "Value 10",
-                    "Value 11",
-                    "Value 12"
-                ];
-                formattedData = rawOutput.map(function (value, index) { return ({
-                    label: labels[index],
-                    value: BigInt(value).toString(),
-                }); });
-                url = 'https://events.pagerduty.com/v2/enqueue';
-                headers = {
-                    'Content-Type': 'application/json',
-                };
-                data = {
-                    payload: {
-                        summary: formattedData[0].value,
-                        severity: 'critical',
-                        source: 'Alert source',
-                    },
-                    routing_key: pagerDuty,
-                    event_action: 'trigger',
-                };
-                return [4 /*yield*/, axios.post(process.env.SLACK_WEBHOOK_URL, { text: "value: ".concat(formattedData[0].value) })];
+                getUserHealthResponse = _a.sent();
+                console.log(getUserHealthResponse);
+                return [4 /*yield*/, healthChecker.getReserveAssetLiability(WETH)];
             case 2:
-                slackResponse = _a.sent();
-                console.log(slackResponse.data);
+                getReserveAssetLiabilityResponse = _a.sent();
+                console.log(getReserveAssetLiabilityResponse);
+                return [4 /*yield*/, healthChecker.getAllReservesAssetLiability()];
+            case 3:
+                getAllReservesAssetLiabilityResponse = _a.sent();
+                console.log(getAllReservesAssetLiabilityResponse);
                 return [2 /*return*/];
         }
     });
