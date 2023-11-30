@@ -126,7 +126,7 @@ export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: C
 		}
 
 		// Check that the absolute value of the difference is less than the max diff
-		if (diff < MAX_DIFF && diff > -MAX_DIFF) {
+		if (usdDiff < MAX_DIFF && usdDiff > -MAX_DIFF) {
 			continue;  // COMMENT OUT FOR TESTING
 		}
 
