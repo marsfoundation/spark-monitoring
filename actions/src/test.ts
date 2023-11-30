@@ -1,3 +1,6 @@
+// USE THIS FILE FOR LOCAL TESTING.
+// RUN WITH `tsc src/test.ts --resolveJsonModule && node src/test.js` from `actions` directory.
+
 // import * as dotenv from "dotenv";
 
 // const axios = require('axios');

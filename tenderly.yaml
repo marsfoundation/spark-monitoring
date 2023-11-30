@@ -29,5 +29,5 @@ actions:
           block:
             network:
               - 1
-            blocks: 100
+            blocks: 500
 
