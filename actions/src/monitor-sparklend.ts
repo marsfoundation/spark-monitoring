@@ -120,8 +120,10 @@ export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: C
 		// var MAX_DIFF = 1_000 * 10 ** 8;  // 1k USD diff to trigger alert
 		var MAX_DIFF = 1 * 10 ** 8;  // 1 USD diff to trigger alert
 
-		if (reserveInfo.reserve === DAI) {
-			MAX_DIFF = 272_000 * 10 ** 8;  // 275k USD diff to trigger alert
+		console.log({reserve: reserveInfo.reserve, DAI})
+
+		if (reserveInfo.reserve.toLowerCase() === DAI.toLowerCase()) {
+			MAX_DIFF = 273_000 * 10 ** 8;  // 273k USD diff to trigger alert soon
 			// MAX_DIFF = 290_000 * 10 ** 8;  // 100k USD diff to trigger alert
 		}
 
