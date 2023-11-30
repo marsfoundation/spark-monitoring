@@ -7,11 +7,10 @@ import {
 
 const axios = require('axios');
 
-import PoolAbi from '../jsons/pool-abi.json';
+import poolAbi from '../jsons/pool-abi.json';
+import oracleAbi from '../jsons/oracle-abi.json';
 
 import { abi as healthCheckerAbi } from '../jsons/SparkLendHealthChecker.json';
-
-// import { deployedBytecode as HealthCheckerBytecode } from '../jsons/SparkLendHealthChecker.json';
 
 const ethers = require('ethers');
 
@@ -23,7 +22,7 @@ export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Ev
 	const POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987";
 	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B";
 
-	const pool = new ethers.Contract(POOL_ADDRESS, PoolAbi);
+	const pool = new ethers.Contract(POOL_ADDRESS, poolAbi);
 
 	// 2. Filter events logs to get all pool logs
 
@@ -72,8 +71,9 @@ export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Ev
 	// 5. Filter userHealths to only users below liquidation threshold, exit if none
 
 	const usersBelowLT = userHealths.filter(userHealth => {
+		return userHealth.healthFactor < 2e18;  // TESTING
 		// return userHealth.belowLiquidationThreshold;
-		return true;  // Return true for testing purposes
+		// return true;  // UNCOMMENT AND REPLACE FOR TESTING
 	});
 
 	if (usersBelowLT.length === 0) {
@@ -81,93 +81,66 @@ export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Ev
 		return;
 	}
 
-	// 6. Generate messages for each user below liquidation threshold
+	// 6. Generate messages for each user below liquidation threshold and send to Slack and PagerDuty
 
-	const usersBelowLTMessages = usersBelowLT.map(userHealth => {
+	const messages = usersBelowLT.map(userHealth => {
 		return formatUserHealthAlertMessage(userHealth, txEvent);
 	})
 
-	// 7. Send messages to Slack
+	if (messages.length === 0) return;
 
-	const slackWebhookUrl = await context.secrets.get('SLACK_WEBHOOK_URL');
+	await sendMessagesToSlack(messages, context);
 
-	const slackResponses = await Promise.all(usersBelowLTMessages.map(async (message) => {
-		await axios.post(slackWebhookUrl, { text: message });
-	}))
-
-	for (const slackResponse of slackResponses) {
-		console.log(slackResponse);
-	}
-
-	// 8. Send messages to PagerDuty
-
-	const testPagerDuty = await context.secrets.get('TEST_PAGERDUTY');
-
-	if (testPagerDuty === 'false') {
-		console.log("Test PagerDuty is false, not sending PagerDuty alerts");
-		return;
-	}
-
-	const pagerDutyRoutingKey = await context.secrets.get('PAGERDUTY_ROUTING_KEY');
-
-	const headers = {
-	  'Content-Type': 'application/json',
-	};
-
-	const data = {
-	  payload: {
-		summary: "",
-		severity: 'critical',
-		source: 'Alert source',
-	  },
-	  routing_key: pagerDutyRoutingKey,
-	  event_action: 'trigger',
-	};
-
-	const pagerDutyResponses = await Promise.all(usersBelowLTMessages.map(async (message) => {
-		data.payload.summary = message;
-		await axios.post('https://events.pagerduty.com/v2/enqueue', data, { headers });
-	}));
-
-	for (const pagerDutyResponse of pagerDutyResponses) {
-		console.log(pagerDutyResponse);
-	}
+	await sendMessagesToPagerDuty(messages, context);
 }
 
 export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent;
 
-	// 1. Define contracts
-
 	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B";
 	const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f";
+	const ORACLE = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9";
 
 	const url = await context.secrets.get('ETH_RPC_URL');
 
 	const provider = new ethers.providers.JsonRpcProvider(url);
 
 	const healthChecker = new ethers.Contract(HEALTH_CHECKER, healthCheckerAbi, provider);
+	const oracle = new ethers.Contract(ORACLE, oracleAbi, provider);
 
 	const getAllReservesAssetLiabilityResponse = await healthChecker.getAllReservesAssetLiability();
 
 	var messages = [];
 
 	for (const reserveInfo of getAllReservesAssetLiabilityResponse) {
-		if (reserveInfo.reserve === DAI) {
-
-		}
-
 		const diff = BigInt(reserveInfo.assets) - BigInt(reserveInfo.liabilities);
+		const price = await oracle.getAssetPrice(reserveInfo.reserve);
+		const usdDiff = diff * BigInt(price) / BigInt(10 ** 18);
 
-		// Check that the absolute value of the difference is less than 1000
-		// if (diff < 1000n && diff > -1000n) {
-		if (diff > 100000000000000000000000000000000000n ) {
-			return;
+		// var MAX_DIFF = 1_000 * 10 ** 8;  // 1k USD diff to trigger alert
+		var MAX_DIFF = 1 * 10 ** 8;  // 1 USD diff to trigger alert
+
+		if (reserveInfo.reserve === DAI) {
+			MAX_DIFF = 272_000 * 10 ** 8;  // 275k USD diff to trigger alert
+			// MAX_DIFF = 290_000 * 10 ** 8;  // 100k USD diff to trigger alert
 		}
 
-		messages.push(formatAssetLiabilityAlertMessage({...reserveInfo, diff}, txEvent));
+		// Check that the absolute value of the difference is less than the max diff
+		if (diff < MAX_DIFF && diff > -MAX_DIFF) {
+			continue;  // COMMENT OUT FOR TESTING
+		}
+
+		messages.push(await formatAssetLiabilityAlertMessage({...reserveInfo, diff, usdDiff, price}, txEvent, provider));
 	}
 
+	if (messages.length === 0) return;
+
+	await sendMessagesToSlack(messages, context);
+
+	await sendMessagesToPagerDuty(messages, context);
+}
+
+const sendMessagesToSlack = async (messages: Array<string>, context: Context) => {
 	const slackWebhookUrl = await context.secrets.get('SLACK_WEBHOOK_URL');
 
 	const slackResponses = await Promise.all(messages.map(async (message) => {
@@ -177,11 +150,13 @@ export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: C
 	for (const slackResponse of slackResponses) {
 		console.log(slackResponse);
 	}
+}
 
-	const testPagerDuty = await context.secrets.get('TEST_PAGERDUTY');
+const sendMessagesToPagerDuty = async (messages: Array<string>, context: Context) => {
+	const deactivatePagerDuty = await context.secrets.get('DEACTIVATE_PAGERDUTY');
 
-	if (testPagerDuty === 'false') {
-		console.log("Test PagerDuty is false, not sending PagerDuty alerts");
+	if (deactivatePagerDuty === 'true') {
+		console.log("PagerDuty deactivated");
 		return;
 	}
 
@@ -211,16 +186,45 @@ export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: C
 	}
 }
 
-const formatAssetLiabilityAlertMessage = (reserveInfo: any, txEvent: any) => {
+const formatAssetLiabilityAlertMessage = async (reserveInfo: any, txEvent: any, provider: any) => {
+	const tokenAbi = ["function symbol() view returns (string)"];
+
+	const token = new ethers.Contract(reserveInfo.reserve, tokenAbi, provider);
+
+	const tokenSymbol = await token.symbol();
+
+	// 8 decimal representation
+	const usdAssets = BigInt(reserveInfo.assets) * BigInt(reserveInfo.price) / BigInt(10 ** 18);
+	const usdLiabilities = BigInt(reserveInfo.liabilities) * BigInt(reserveInfo.price) / BigInt(10 ** 18);
+
 	return `
 \`\`\`
 🚨🚨🚨 ASSET/LIABILITY ALERT 🚨🚨🚨
-Reserve ${reserveInfo.reserve} has a difference between assets and liabilities of ${BigInt(reserveInfo.diff).toString()}.
+
+${tokenSymbol} reserve (${reserveInfo.reserve}) has a difference between assets and liabilities of ${formatBigInt(BigInt(reserveInfo.diff).toString(), 18)}.
 
 Discovered at block ${txEvent.blockNumber}.
 
+RAW DATA:
+
 Assets:      ${BigInt(reserveInfo.assets).toString()}
 Liabilities: ${BigInt(reserveInfo.liabilities).toString()}
+Diff:        ${BigInt(reserveInfo.diff).toString()}
+
+FORMATTED DATA:
+
+Assets:      ${formatBigInt(BigInt(reserveInfo.assets), 18)}
+Liabilities: ${formatBigInt(BigInt(reserveInfo.liabilities), 18)}
+Diff:        ${formatBigInt(BigInt(reserveInfo.diff), 18)}
+
+USD FORMATTED DATA:
+
+Assets:      ${formatBigInt(BigInt(usdAssets), 8)}
+Liabilities: ${formatBigInt(BigInt(usdLiabilities), 8)}
+Diff:        ${formatBigInt(BigInt(reserveInfo.usdDiff), 8)}
+
+NOTE: USD diff derived from raw values, not from USD assets/liabilities.
+
 \`\`\`
 	`
 }
@@ -235,11 +239,28 @@ This indicates possible malicious activity.
 
 Transaction hash: ${txEvent.hash}
 
-Total Collateral (USD 8 dec): ${BigInt(userHealth.totalCollateralBase).toString()}
-Total Debt (USD 8 dec):       ${BigInt(userHealth.totalDebtBase).toString()}
-LT (BPS):                     ${BigInt(userHealth.currentLiquidationThreshold).toString()}
-LTV (BPS):                    ${BigInt(userHealth.ltv).toString()}
-Health Factor:                ${BigInt(userHealth.healthFactor).toString()}
+RAW DATA:
+
+Total Collateral: ${BigInt(userHealth.totalCollateralBase).toString()}
+Total Debt:       ${BigInt(userHealth.totalDebtBase).toString()}
+LT:               ${BigInt(userHealth.currentLiquidationThreshold).toString()}
+LTV:              ${BigInt(userHealth.ltv).toString()}
+Health Factor:    ${BigInt(userHealth.healthFactor).toString()}
+
+FORMATTED DATA:
+
+Total Collateral: ${formatBigInt(BigInt(userHealth.totalCollateralBase), 8)}
+Total Debt:       ${formatBigInt(BigInt(userHealth.totalDebtBase), 8)}
+LT:               ${formatBigInt(BigInt(userHealth.currentLiquidationThreshold), 2)}%
+LTV:              ${formatBigInt(BigInt(userHealth.ltv), 2)}%
+Health Factor:    ${formatBigInt(BigInt(userHealth.healthFactor), 18)}
 \`\`\`
 	`
+}
+
+function formatBigInt(value: any, decimals: any) {
+    const integerPart = BigInt(value) / BigInt(10 ** decimals);
+    const fractionalPart = BigInt(value) % BigInt(10 ** decimals);
+    const fractionalString = fractionalPart.toString().padStart(decimals, '0');
+    return `${integerPart}.${fractionalString}`;
 }

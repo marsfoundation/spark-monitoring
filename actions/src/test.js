@@ -37,34 +37,35 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var dotenv = require("dotenv");
-var axios = require('axios');
+// const axios = require('axios');
 var SparkLendHealthChecker_json_1 = require("../jsons/SparkLendHealthChecker.json");
+var oracleAbi = require('../jsons/oracle-abi.json');
 var ethers = require('ethers');
 dotenv.config();
 var main = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var token, pagerDuty, HEALTH_CHECKER, WHALE_ADDRESS, WETH, provider, healthChecker, getUserHealthResponse, getReserveAssetLiabilityResponse, getAllReservesAssetLiabilityResponse;
+    var HEALTH_CHECKER, ORACLE, WETH, provider, healthChecker, oracle, response, assets, liabilities, diff, price, usdDiff;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                token = process.env.TENDERLY_ACCESS_KEY;
-                pagerDuty = process.env.PAGERDUTY_ACCESS_KEY;
                 HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B";
-                WHALE_ADDRESS = "0xf8dE75c7B95edB6f1E639751318f117663021Cf0";
+                ORACLE = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9";
                 WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
                 provider = new ethers.JsonRpcProvider(process.env.ETH_RPC_URL);
                 healthChecker = new ethers.Contract(HEALTH_CHECKER, SparkLendHealthChecker_json_1.abi, provider);
-                return [4 /*yield*/, healthChecker.getUserHealth(WHALE_ADDRESS)];
-            case 1:
-                getUserHealthResponse = _a.sent();
-                console.log(getUserHealthResponse);
+                oracle = new ethers.Contract(ORACLE, oracleAbi, provider);
                 return [4 /*yield*/, healthChecker.getReserveAssetLiability(WETH)];
+            case 1:
+                response = _a.sent();
+                console.log(response);
+                assets = response[0];
+                liabilities = response[1];
+                diff = BigInt(assets) - BigInt(liabilities);
+                return [4 /*yield*/, oracle.getAssetPrice(WETH)];
             case 2:
-                getReserveAssetLiabilityResponse = _a.sent();
-                console.log(getReserveAssetLiabilityResponse);
-                return [4 /*yield*/, healthChecker.getAllReservesAssetLiability()];
-            case 3:
-                getAllReservesAssetLiabilityResponse = _a.sent();
-                console.log(getAllReservesAssetLiabilityResponse);
+                price = _a.sent();
+                console.log({ price: price });
+                usdDiff = diff * BigInt(price) / BigInt(Math.pow(10, 18));
+                console.log({ reserve: WETH, diff: diff, price: price, usdDiff: usdDiff });
                 return [2 /*return*/];
         }
     });

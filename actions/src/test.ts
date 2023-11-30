@@ -1,39 +1,56 @@
-import * as dotenv from "dotenv";
+// import * as dotenv from "dotenv";
 
 // const axios = require('axios');
 
-import { abi as healthCheckerAbi } from '../jsons/SparkLendHealthChecker.json';
+// import { abi as healthCheckerAbi } from '../jsons/SparkLendHealthChecker.json';
 
-const ethers = require('ethers');
+// const oracleAbi = require('../jsons/oracle-abi.json');
 
-dotenv.config();
+// const ethers = require('ethers');
 
-const main = async() => {
+// dotenv.config();
+
+// const main = async() => {
 	// const token = process.env.TENDERLY_ACCESS_KEY!;
 	// const pagerDuty = process.env.PAGERDUTY_ACCESS_KEY!;
 
-	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B";
-	const WHALE_ADDRESS = "0xf8dE75c7B95edB6f1E639751318f117663021Cf0";
-	const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+	// const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B";
+	// const WHALE_ADDRESS = "0xf8dE75c7B95edB6f1E639751318f117663021Cf0";
+	// const ORACLE = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9";
+	// const WETH = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 
 	// // Log out all keys in ethers
 	// console.log(Object.keys(ethers));
 
-	const provider = new ethers.JsonRpcProvider(process.env.ETH_RPC_URL!);
+	// const provider = new ethers.JsonRpcProvider(process.env.ETH_RPC_URL!);
 
-	const healthChecker = new ethers.Contract(HEALTH_CHECKER, healthCheckerAbi, provider);
+	// const healthChecker = new ethers.Contract(HEALTH_CHECKER, healthCheckerAbi, provider);
+	// const oracle = new ethers.Contract(ORACLE, oracleAbi, provider);
 
-	const getUserHealthResponse = await healthChecker.getUserHealth(WHALE_ADDRESS);
+	// const getUserHealthResponse = await healthChecker.getUserHealth(WHALE_ADDRESS);
 
-	console.log(getUserHealthResponse)
+	// console.log(getUserHealthResponse)
 
-	const getReserveAssetLiabilityResponse = await healthChecker.getReserveAssetLiability(WETH);
+	// const response = await healthChecker.getReserveAssetLiability(WETH);
 
-	console.log(getReserveAssetLiabilityResponse)
+	// console.log(response)
 
-	const getAllReservesAssetLiabilityResponse = await healthChecker.getAllReservesAssetLiability();
+	// const assets = response[0]
+	// const liabilities = response[1]
 
-	console.log(getAllReservesAssetLiabilityResponse)
+	// const diff = BigInt(assets) - BigInt(liabilities);
+	// const price = await oracle.getAssetPrice(WETH);
+
+	// console.log({price})
+	// const usdDiff = diff * BigInt(price) / BigInt(10 ** 18);
+
+	// 	console.log({reserve: WETH, diff, price, usdDiff})
+
+	// const getAllReservesAssetLiabilityResponse = await healthChecker.getAllReservesAssetLiability();
+
+	// console.log(getAllReservesAssetLiabilityResponse)
+
+
 
 	// // Define labels for each value
 	// const labels = [
@@ -82,6 +99,6 @@ const main = async() => {
 	// const slackResponse = await axios.post(process.env.SLACK_WEBHOOK_URL!, { text: `value: ${formattedData[0].value}` });
 
 	// console.log(slackResponse.data);
-}
+// }
 
-main();
+// main();

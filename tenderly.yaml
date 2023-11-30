@@ -5,32 +5,6 @@ actions:
     runtime: v1
     sources: actions
     specs:
-      # block-number-printer:
-      #   description: Example Web3 Action that logs block number once it is mined.
-      #   function: log-block:blockHelloWorldFn
-      #   trigger:
-      #     type: block
-      #     block:
-      #       network:
-      #         - 1
-      #       blocks: 1
-
-      # log-mkr-event:
-      #   description: Example Web3 Action that logs MKR event data
-      #   function: log-mkr-event-data:logEvent
-      #   trigger:
-      #     type: transaction
-      #     transaction:
-      #       status:
-      #         - mined
-      #       filters:
-      #         # Transaction must be from the network with network ID 1 (mainnet)
-      #         - network: 1
-      #           # Transaction must have failed
-      #           status: success
-      #           # Transaction must have been sent to MKR address
-      #           to: 0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2
-
       monitor-user-health:
         description: Checks user's health factors after they interact with the protocol.
         function: src/monitor-sparklend:getUserInfoSparkLend
