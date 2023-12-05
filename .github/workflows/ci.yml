@@ -19,7 +19,7 @@ jobs:
         node-version: '12'  # Specify your Node.js version here
 
     - name: Install dependencies
-      run: npm install  # Or use yarn
+      run: cd actions && npm install
 
     # Add additional steps to build or test your project if necessary
 
