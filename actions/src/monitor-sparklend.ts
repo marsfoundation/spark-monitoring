@@ -72,8 +72,8 @@ export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Ev
 
 	const usersBelowLT = userHealths.filter(userHealth => {
 		// return userHealth.healthFactor < 2e18;  // TESTING
-		// return userHealth.belowLiquidationThreshold;
-		return true;  // UNCOMMENT AND REPLACE FOR TESTING
+		return userHealth.belowLiquidationThreshold;
+		// return true;  // UNCOMMENT AND REPLACE FOR TESTING
 	});
 
 	if (usersBelowLT.length === 0) {
@@ -117,8 +117,7 @@ export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: C
 		const price = await oracle.getAssetPrice(reserveInfo.reserve);
 		const usdDiff = diff * BigInt(price) / BigInt(10 ** 18);
 
-		// var MAX_DIFF = 1_000 * 10 ** 8;  // 1k USD diff to trigger alert
-		var MAX_DIFF = 1 * 10 ** 8;  // TEST
+		var MAX_DIFF = 1_000 * 10 ** 8;  // 1k USD diff to trigger alert
 
 		if (reserveInfo.reserve.toLowerCase() === DAI.toLowerCase()) {
 			MAX_DIFF = 300_000 * 10 ** 8;
