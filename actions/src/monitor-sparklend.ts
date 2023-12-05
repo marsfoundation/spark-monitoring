@@ -5,20 +5,26 @@ import {
 	TransactionEvent,
 } from '@tenderly/actions';
 
-import { createTenderlyFork } from './fork';
+const axios = require('axios');
 
-import PoolAbi from '../abis/pool-abi.json';
+import poolAbi from '../jsons/pool-abi.json';
+import oracleAbi from '../jsons/oracle-abi.json';
+
+import { abi as healthCheckerAbi } from '../jsons/SparkLendHealthChecker.json';
 
 const ethers = require('ethers');
 
-const hardhat = require('hardhat');
-
-export const action1: ActionFn = async (context: Context, event: Event) => {
+export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent;
 
-	const POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987";
+	// 1. Define contracts
 
-	const pool = new ethers.Contract(POOL_ADDRESS, PoolAbi);
+	const POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987";
+	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B";
+
+	const pool = new ethers.Contract(POOL_ADDRESS, poolAbi);
+
+	// 2. Filter events logs to get all pool logs
 
 	const filteredLogs = txEvent.logs.filter(log => {
 		if (log.address !== POOL_ADDRESS) return;
@@ -30,116 +36,229 @@ export const action1: ActionFn = async (context: Context, event: Event) => {
 		}
 	});
 
+	// 3. Get all `user` properties from logs, from all events that users adjust positions
+
 	let users: Array<string> = [];
 
 	filteredLogs.forEach(log => {
 		const parsedLog = pool.interface.parseLog(log).args;
 		if (parsedLog.user) {
-			users.push(parsedLog.user); // Correct property name here
+			users.push(parsedLog.user);
 		}
 	});
 
 	users.push(txEvent.from);
+	users = [...new Set(users)];  // Remove duplicates
 
-	// Remove duplicates
-	users = [...new Set(users)];
+	// 4. Get health of all users
 
-	console.log({users});
+	const url = await context.secrets.get('ETH_RPC_URL');
 
-	const token = await context.secrets.get('TENDERLY_ACCESS_KEY');
+	const provider = new ethers.providers.JsonRpcProvider(url);
 
-	const fork = await createTenderlyFork(token, { network_id: '1' })
+	const healthChecker = new ethers.Contract(HEALTH_CHECKER, healthCheckerAbi, provider);
 
-	const healthCheckerFactory = await hardhat.ethers.getContractFactory(
-		"Lock",
-		fork.provider.getSigner()
-	);
+	const userHealths = await Promise.all(users.map(async (user) => {
+		return {
+			user,
+			...await healthChecker.getUserHealth(user)
+		}
+	}));
 
-	const healthChecker = await healthCheckerFactory.deploy();
+	console.log({users})
+	console.log({userHealths})
 
-	await healthChecker.deployed();
+	// 5. Filter userHealths to only users below liquidation threshold, exit if none
 
-	console.log("HealthChecker deployed to:", healthChecker.address);
-	console.log("HealthChecker deployed by:", healthChecker.deployTransaction.from);
-	console.log("HealthChecker check", await healthChecker.runChecks());
+	const usersBelowLT = userHealths.filter(userHealth => {
+		// return userHealth.healthFactor < 2e18;  // TESTING
+		return userHealth.belowLiquidationThreshold;
+		// return true;  // UNCOMMENT AND REPLACE FOR TESTING
+	});
+
+	if (usersBelowLT.length === 0) {
+		console.log("No users below liquidation threshold");
+		return;
+	}
+
+	// 6. Generate messages for each user below liquidation threshold and send to Slack and PagerDuty
+
+	const messages = usersBelowLT.map(userHealth => {
+		return formatUserHealthAlertMessage(userHealth, txEvent);
+	})
+
+	if (messages.length === 0) return;
+
+	await sendMessagesToSlack(messages, context);
+
+	await sendMessagesToPagerDuty(messages, context);
 }
 
-// pool.interface.parseLog(log).name == "MintUnbacked" ||
-// pool.interface.parseLog(log).name == "BackUnbacked" ||
-// pool.interface.parseLog(log).name == "Supply" ||
-// pool.interface.parseLog(log).name == "Withdraw" ||
-// pool.interface.parseLog(log).name == "Borrow" ||
-// pool.interface.parseLog(log).name == "Repay" ||
-// pool.interface.parseLog(log).name == "SwapBorrowRateMode" ||
-// pool.interface.parseLog(log).name == "IsolationModeTotalDebtUpdated" ||
-// pool.interface.parseLog(log).name == "UserEModeSet" ||
-// pool.interface.parseLog(log).name == "ReserveUsedAsCollateralEnabled" ||
-// pool.interface.parseLog(log).name == "ReserveUsedAsCollateralDisabled" ||
-// pool.interface.parseLog(log).name == "RebalanceStableBorrowRate" ||
-// pool.interface.parseLog(log).name == "FlashLoan" ||
-// pool.interface.parseLog(log).name == "LiquidationCall" ||
-// pool.interface.parseLog(log).name == "ReserveDataUpdated" ||
-// pool.interface.parseLog(log).name == "MintedToTreasury"
+export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: Context, event: Event) => {
+	let txEvent = event as TransactionEvent;
 
+	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B";
+	const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f";
+	const ORACLE = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9";
 
-// const event = {
-	// 	network: '1',
-	// 	blockHash: '0x4a7f1c3222fdb4e7ca3f3b01deade67323bd7989b5171d766cbdc9c37b3de034',
-	// 	blockNumber: 18634974,
-	// 	from: '0x3c9Ea5C4Fec2A77E23Dd82539f4414266Fe8f757',
-	// 	hash: '0x6147711f330db7f12bee12b3726cb5411b5b7aa776cea925f984a48120955575',
-	// 	to: '0xC13e21B648A5Ee794902342038FF3aDAB66BE987',
-	// 	logs: [
-	// 	  {
-	// 		address: '0xf705d2B7e92B3F38e6ae7afaDAA2fEE110fE5914',
-	// 		data: '0x00000000000000000000000000000000000000000001aa234ec0e102dade9b63',
-	// 		topics: [Array]
-	// 	  },
-	// 	  {
-	// 		address: '0xf705d2B7e92B3F38e6ae7afaDAA2fEE110fE5914',
-	// 		data: '0x00000000000000000000000000000000000000000001aa234ec0e102dade9b6300000000000000000000000000000000000000000000029f1723472798de9b630000000000000000000000000000000000000000034d4d6a95cba6f4f9a2249b',
-	// 		topics: [Array]
-	// 	  },
-	// 	  {
-	// 		address: '0xC13e21B648A5Ee794902342038FF3aDAB66BE987',
-	// 		data: '0x000000000000000000000000000000000000000000267dc697fd352f26b4dafe00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002c7e82a503c0ccaf41b000000000000000000000000000000000000000000003485c3bda12e13d7b70dc4d0000000000000000000000000000000000000000034d4d6a95cba6f4f9a2249b',
-	// 		topics: [Array]
-	// 	  },
-	// 	  {
-	// 		address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
-	// 		data: '0x00000000000000000000000000000000000000000001a784379d99db42000000',
-	// 		topics: [Array]
-	// 	  },
-	// 	  {
-	// 		address: '0xC13e21B648A5Ee794902342038FF3aDAB66BE987',
-	// 		data: '0x0000000000000000000000003c9ea5c4fec2a77e23dd82539f4414266fe8f75700000000000000000000000000000000000000000001a784379d99db4200000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000002c7e82a503c0ccaf41b000',
-	// 		topics: [Array]
-	// 	  }
-	// 	],
-	// 	input: '0xa415bcad0000000000000000000000006b175474e89094c44da98b954eedeac495271d0f00000000000000000000000000000000000000000001a784379d99db42000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000000000000000000000000003c9ea5c4fec2a77e23dd82539f4414266fe8f757',
-	// 	value: '0x0',
-	// 	nonce: '0x709',
-	// 	gas: '0x7264f',
-	// 	gasUsed: '0x558f8',
-	// 	cumulativeGasUsed: '0x7d0212',
-	// 	gasPrice: '0x83b1f484f',
-	// 	gasTipCap: '0x5f5e100',
-	// 	gasFeeCap: '0xb623c7d13',
-	// 	transactionHash: '0x6147711f330db7f12bee12b3726cb5411b5b7aa776cea925f984a48120955575'
-	//   }
+	const url = await context.secrets.get('ETH_RPC_URL');
 
-	// {
-	// 	gateways: DefaultGateways {
-	// 	  gatewaysService: GatewaysService { gatewayConfigs: [Array] }
-	// 	},
-	// 	secrets: DefaultSecrets {
-	// 	  secrets: { TENDERLY_ACCESS_KEY: '***REDACTED***' }
-	// 	},
-	// 	storage: DefaultStorage {
-	// 	  storageService: StorageService {
-	// 		baseUrl: 'https://storage.tenderly.co/api',
-	// 		storageId: '6fbbf406-649c-44a3-b381-7ce42ee51026',
-	// 		token: '8518b077-f75a-4d92-a737-48bf4ee2962f'
-	// 	  }
-	// 	}
-	//   }
+	const provider = new ethers.providers.JsonRpcProvider(url);
+
+	const healthChecker = new ethers.Contract(HEALTH_CHECKER, healthCheckerAbi, provider);
+	const oracle = new ethers.Contract(ORACLE, oracleAbi, provider);
+
+	const getAllReservesAssetLiabilityResponse = await healthChecker.getAllReservesAssetLiability();
+
+	var messages = [];
+
+	for (const reserveInfo of getAllReservesAssetLiabilityResponse) {
+		const diff = BigInt(reserveInfo.assets) - BigInt(reserveInfo.liabilities);
+		const price = await oracle.getAssetPrice(reserveInfo.reserve);
+		const usdDiff = diff * BigInt(price) / BigInt(10 ** 18);
+
+		var MAX_DIFF = 1_000 * 10 ** 8;  // 1k USD diff to trigger alert
+
+		if (reserveInfo.reserve.toLowerCase() === DAI.toLowerCase()) {
+			MAX_DIFF = 300_000 * 10 ** 8;
+		}
+
+		// Check that the absolute value of the difference is less than the max diff
+		if (usdDiff < MAX_DIFF && usdDiff > -MAX_DIFF) {
+			continue;  // COMMENT OUT FOR TESTING
+		}
+
+		messages.push(await formatAssetLiabilityAlertMessage({...reserveInfo, diff, usdDiff, price}, txEvent, provider));
+	}
+
+	if (messages.length === 0) return;
+
+	await sendMessagesToSlack(messages, context);
+
+	await sendMessagesToPagerDuty(messages, context);
+}
+
+const sendMessagesToSlack = async (messages: Array<string>, context: Context) => {
+	const slackWebhookUrl = await context.secrets.get('SLACK_WEBHOOK_URL');
+
+	const slackResponses = await Promise.all(messages.map(async (message) => {
+		await axios.post(slackWebhookUrl, { text: message });
+	}))
+
+	for (const slackResponse of slackResponses) {
+		console.log(slackResponse);
+	}
+}
+
+const sendMessagesToPagerDuty = async (messages: Array<string>, context: Context) => {
+	const deactivatePagerDuty = await context.secrets.get('DEACTIVATE_PAGERDUTY');
+
+	if (deactivatePagerDuty === 'true') {
+		console.log("PagerDuty deactivated");
+		return;
+	}
+
+	const pagerDutyRoutingKey = await context.secrets.get('PAGERDUTY_ROUTING_KEY');
+
+	const headers = {
+	  'Content-Type': 'application/json',
+	};
+
+	const data = {
+	  payload: {
+		summary: "",
+		severity: 'critical',
+		source: 'Alert source',
+	  },
+	  routing_key: pagerDutyRoutingKey,
+	  event_action: 'trigger',
+	};
+
+	const pagerDutyResponses = await Promise.all(messages.map(async (message) => {
+		data.payload.summary = message;
+		await axios.post('https://events.pagerduty.com/v2/enqueue', data, { headers });
+	}));
+
+	for (const pagerDutyResponse of pagerDutyResponses) {
+		console.log(pagerDutyResponse);
+	}
+}
+
+const formatAssetLiabilityAlertMessage = async (reserveInfo: any, txEvent: any, provider: any) => {
+	const tokenAbi = ["function symbol() view returns (string)"];
+
+	const token = new ethers.Contract(reserveInfo.reserve, tokenAbi, provider);
+
+	const tokenSymbol = await token.symbol();
+
+	// 8 decimal representation
+	const usdAssets = BigInt(reserveInfo.assets) * BigInt(reserveInfo.price) / BigInt(10 ** 18);
+	const usdLiabilities = BigInt(reserveInfo.liabilities) * BigInt(reserveInfo.price) / BigInt(10 ** 18);
+
+	return `
+\`\`\`
+🚨🚨🚨 ASSET/LIABILITY ALERT 🚨🚨🚨
+
+${tokenSymbol} reserve (${reserveInfo.reserve}) has a difference between assets and liabilities of ${formatBigInt(BigInt(reserveInfo.diff).toString(), 18)}.
+
+Discovered at block ${txEvent.blockNumber}.
+
+RAW DATA:
+
+Assets:      ${BigInt(reserveInfo.assets).toString()}
+Liabilities: ${BigInt(reserveInfo.liabilities).toString()}
+Diff:        ${BigInt(reserveInfo.diff).toString()}
+
+FORMATTED DATA:
+
+Assets:      ${formatBigInt(BigInt(reserveInfo.assets), 18)}
+Liabilities: ${formatBigInt(BigInt(reserveInfo.liabilities), 18)}
+Diff:        ${formatBigInt(BigInt(reserveInfo.diff), 18)}
+
+USD FORMATTED DATA:
+
+Assets:      ${formatBigInt(BigInt(usdAssets), 8)}
+Liabilities: ${formatBigInt(BigInt(usdLiabilities), 8)}
+Diff:        ${formatBigInt(BigInt(reserveInfo.usdDiff), 8)}
+
+NOTE: USD diff derived from raw values, not from USD assets/liabilities.
+
+\`\`\`
+	`
+}
+
+const formatUserHealthAlertMessage = (userHealth: any, txEvent: TransactionEvent) => {
+	return `
+\`\`\`
+🚨🚨🚨 USER BELOW LIQUIDATION THRESHOLD ALERT 🚨🚨🚨
+
+Account ${userHealth.user} is BELOW liquidation threshold after protocol interaction.
+This indicates possible malicious activity.
+
+Transaction hash: ${txEvent.hash}
+
+RAW DATA:
+
+Total Collateral: ${BigInt(userHealth.totalCollateralBase).toString()}
+Total Debt:       ${BigInt(userHealth.totalDebtBase).toString()}
+LT:               ${BigInt(userHealth.currentLiquidationThreshold).toString()}
+LTV:              ${BigInt(userHealth.ltv).toString()}
+Health Factor:    ${BigInt(userHealth.healthFactor).toString()}
+
+FORMATTED DATA:
+
+Total Collateral: ${formatBigInt(BigInt(userHealth.totalCollateralBase), 8)}
+Total Debt:       ${formatBigInt(BigInt(userHealth.totalDebtBase), 8)}
+LT:               ${formatBigInt(BigInt(userHealth.currentLiquidationThreshold), 2)}%
+LTV:              ${formatBigInt(BigInt(userHealth.ltv), 2)}%
+Health Factor:    ${formatBigInt(BigInt(userHealth.healthFactor), 18)}
+\`\`\`
+	`
+}
+
+function formatBigInt(value: any, decimals: any) {
+    const integerPart = BigInt(value) / BigInt(10 ** decimals);
+    const fractionalPart = BigInt(value) % BigInt(10 ** decimals);
+    const fractionalString = fractionalPart.toString().padStart(decimals, '0');
+    return `${integerPart}.${fractionalString}`;
+}
