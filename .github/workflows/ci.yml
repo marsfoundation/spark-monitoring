@@ -27,7 +27,9 @@ jobs:
       run: curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-linux.sh | sh
 
     - name: Tenderly Login
-      run: tenderly login --authentication-method "access-key" --access-key ${{ secrets.TENDERLY_ACCESS_KEY }}
+      run:
+        tenderly login --authentication-method "access-key" --access-key ${{ secrets.TENDERLY_ACCESS_KEY }}
+        tenderly version
 
     - name: Deploy to Tenderly
       run: tenderly actions deploy
