@@ -71,9 +71,9 @@ export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Ev
 	// 5. Filter userHealths to only users below liquidation threshold, exit if none
 
 	const usersBelowLT = userHealths.filter(userHealth => {
-		return userHealth.healthFactor < 2e18;  // TESTING
+		// return userHealth.healthFactor < 2e18;  // TESTING
 		// return userHealth.belowLiquidationThreshold;
-		// return true;  // UNCOMMENT AND REPLACE FOR TESTING
+		return true;  // UNCOMMENT AND REPLACE FOR TESTING
 	});
 
 	if (usersBelowLT.length === 0) {
@@ -118,13 +118,10 @@ export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: C
 		const usdDiff = diff * BigInt(price) / BigInt(10 ** 18);
 
 		// var MAX_DIFF = 1_000 * 10 ** 8;  // 1k USD diff to trigger alert
-		var MAX_DIFF = 1 * 10 ** 8;  // 1 USD diff to trigger alert
-
-		console.log({reserve: reserveInfo.reserve, DAI})
+		var MAX_DIFF = 1 * 10 ** 8;  // TEST
 
 		if (reserveInfo.reserve.toLowerCase() === DAI.toLowerCase()) {
-			MAX_DIFF = 273_000 * 10 ** 8;  // 273k USD diff to trigger alert soon
-			// MAX_DIFF = 290_000 * 10 ** 8;  // 100k USD diff to trigger alert
+			MAX_DIFF = 300_000 * 10 ** 8;
 		}
 
 		// Check that the absolute value of the difference is less than the max diff
