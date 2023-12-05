@@ -28,7 +28,7 @@ jobs:
 
     - name: Tenderly Login
       run:
-        tenderly login --authentication-method "access-key" --access-key ${{ secrets.TENDERLY_ACCESS_KEY }}
+        tenderly login --authentication-method "access-key" --access-key ${{ secrets.TENDERLY_ACCESS_KEY }} &&
         tenderly version
 
     - name: Deploy to Tenderly
