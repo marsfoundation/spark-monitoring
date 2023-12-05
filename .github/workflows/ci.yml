@@ -1,0 +1,33 @@
+name: Deploy to Tenderly
+
+on:
+  push:
+    branches:
+      - update-to-use-ci  # Set your default branch here
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12'  # Specify your Node.js version here
+
+    - name: Install dependencies
+      run: npm install  # Or use yarn
+
+    # Add additional steps to build or test your project if necessary
+
+    - name: Install Tenderly CLI
+      run: npm install -g tenderly-cli  # Install Tenderly CLI globally
+
+    - name: Tenderly Login
+      run: tenderly login --authentication-method "access-key" --access-key ${{ secrets.TENDERLY_ACCESS_TOKEN }}
+
+    - name: Deploy to Tenderly
+      run: tenderly actions deploy
