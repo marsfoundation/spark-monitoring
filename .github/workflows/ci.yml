@@ -24,7 +24,7 @@ jobs:
     # Add additional steps to build or test your project if necessary
 
     - name: Install Tenderly CLI
-      run: npm install -g tenderly-cli  # Install Tenderly CLI globally
+      run: curl https://raw.githubusercontent.com/Tenderly/tenderly-cli/master/scripts/install-linux.sh | sh
 
     - name: Tenderly Login
       run: tenderly login --authentication-method "access-key" --access-key ${{ secrets.TENDERLY_ACCESS_TOKEN }}
