@@ -19,7 +19,7 @@ jobs:
         node-version: '12'  # Specify your Node.js version here
 
     - name: Install dependencies
-      run: cd actions && npm install
+      run: cd actions && npm install && npm i @types/mocha
 
     # Add additional steps to build or test your project if necessary
 
