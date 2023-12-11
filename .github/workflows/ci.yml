@@ -3,7 +3,7 @@ name: Deploy to Tenderly
 on:
   push:
     branches:
-      - update-to-use-ci
+      - master
 
 jobs:
   deploy:
