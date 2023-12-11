@@ -3,7 +3,7 @@ name: Deploy to Tenderly
 on:
   push:
     branches:
-      - master
+      - update-to-use-ci
 
 jobs:
   deploy:
@@ -16,10 +16,10 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v1
       with:
-        node-version: '12'  # Specify your Node.js version here
+        node-version: '20'  # Specify your Node.js version here
 
     - name: Install dependencies
-      run: cd actions && npm install && npm i @types/mocha
+      run: cd actions && npm install
 
     # Add additional steps to build or test your project if necessary
 

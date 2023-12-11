@@ -8,6 +8,7 @@
     },
     "dependencies": {
         "@tenderly/actions": "^0.0.8",
+        "@types/mocha": "^10.0.6",
         "hardhat": "^2.19.1"
     },
     "private": true
