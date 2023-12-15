@@ -151,7 +151,7 @@ export const getProtocolInteraction: ActionFn = async (context: Context, event: 
 	const ORACLE_ADDRESS = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9";
 	const oracle = new ethers.Contract(ORACLE_ADDRESS, oracleAbi, provider);
 
-	const rawPoolLogs = txEvent.logs.filter(log => log.address == POOL_ADDRESS)
+	const rawPoolLogs = txEvent.logs.filter(log => log.address.toLowerCase() == POOL_ADDRESS.toLowerCase())
 		console.log({rawPoolLogs})
 
 	const parsedPoolLogs = rawPoolLogs.map(log => pool.interface.parseLog(log))
