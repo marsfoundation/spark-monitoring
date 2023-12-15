@@ -40,9 +40,6 @@ actions:
             status:
               - mined
             filters:
-              # Transaction must be from the network with network ID 1 (mainnet)
               - network: 1
-                # Transaction must have failed
                 status: success
-                # Transaction must have been sent to Pool address
                 to: 0xC13e21B648A5Ee794902342038FF3aDAB66BE987
