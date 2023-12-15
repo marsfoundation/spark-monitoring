@@ -9,6 +9,7 @@ const axios = require('axios');
 
 import poolAbi from '../jsons/pool-abi.json';
 import oracleAbi from '../jsons/oracle-abi.json';
+import erc20Abi from '../jsons/erc20-abi.json';
 
 import { abi as healthCheckerAbi } from '../jsons/SparkLendHealthChecker.json';
 
@@ -140,22 +141,41 @@ export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: C
 
 export const getProtocolInteraction: ActionFn = async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent;
+
+	const rpcUrl = await context.secrets.get('ETH_RPC_URL');
+	const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+
 	const POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987";
 	const pool = new ethers.Contract(POOL_ADDRESS, poolAbi);
 
-	const parsedPoolLogs = txEvent.logs
-		.filter(log => log.address == POOL_ADDRESS)
-		.map(log => pool.interface.parseLog(log))
-		.filter(log => log.name == 'Supply' || log.name == 'Borrow' || log.name == 'Withdraw' || log.name == 'Repay')
+	const ORACLE_ADDRESS = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9";
+	const oracle = new ethers.Contract(ORACLE_ADDRESS, oracleAbi, provider);
 
-	console.log(parsedPoolLogs)
+	const rawPoolLogs = txEvent.logs.filter(log => log.address == POOL_ADDRESS)
+		console.log({rawPoolLogs})
 
-	// get a list of the assets that are in the logs
+	const parsedPoolLogs = rawPoolLogs.map(log => pool.interface.parseLog(log))
+		console.log({parsedPoolLogs})
 
-	// fetch price for each of the logs
+	const filteredParsedPoolLogs = parsedPoolLogs.filter(log => log.name == 'Supply' || log.name == 'Borrow' || log.name == 'Withdraw' || log.name == 'Repay')
+		console.log({filteredParsedPoolLogs})
 
-	// filter out all of the items that have USD value of less than 1.000.000 based on the fetched prices
-	// for stablecoins consider hardcoding price to 1 for that purpose
+	const usedAssets = [...new Set(filteredParsedPoolLogs.map(log=> log.args.reserve))]
+		console.log({usedAssets})
+
+	const prices = await Promise.all(usedAssets.map(async asset => await oracle.getAssetPrice(asset)))
+	const priceSheet = usedAssets.reduce(( sheet, asset, index ) => ( sheet[asset] = prices[index] , sheet), {})
+		console.log({priceSheet})
+
+	const decimals = await Promise.all(usedAssets.map(async asset => await new ethers.Contract(asset, erc20Abi, provider).decimals()))
+	const decimalsSheet = usedAssets.reduce(( sheet, asset, index ) => ( sheet[asset] = decimals[index] , sheet), {})
+		console.log({decimalsSheet})
+
+	const valueFilteredLogs = filteredParsedPoolLogs
+		.filter(log => log.args.amount * priceSheet[log.args.reserve] / decimalsSheet[log.args.reserve] / 10**8 > 100/*0000*/)
+
+		console.log({valueFilteredLogs})
+
 
 	// for each item left send a Slack message
 }
