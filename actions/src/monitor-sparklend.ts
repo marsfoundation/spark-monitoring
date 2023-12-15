@@ -151,33 +151,26 @@ export const getProtocolInteraction: ActionFn = async (context: Context, event: 
 	const ORACLE_ADDRESS = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9";
 	const oracle = new ethers.Contract(ORACLE_ADDRESS, oracleAbi, provider);
 
-	const rawPoolLogs = txEvent.logs.filter(log => log.address.toLowerCase() == POOL_ADDRESS.toLowerCase())
-		console.log({rawPoolLogs})
-
-	const parsedPoolLogs = rawPoolLogs.map(log => pool.interface.parseLog(log))
-		console.log({parsedPoolLogs})
-
-	const filteredParsedPoolLogs = parsedPoolLogs.filter(log => log.name == 'Supply' || log.name == 'Borrow' || log.name == 'Withdraw' || log.name == 'Repay')
-		console.log({filteredParsedPoolLogs})
+	const filteredParsedPoolLogs = txEvent.logs
+		.filter(log => log.address.toLowerCase() == POOL_ADDRESS.toLowerCase())
+		.map(log => pool.interface.parseLog(log))
+		.filter(log => log.name == 'Supply' || log.name == 'Borrow' || log.name == 'Withdraw' || log.name == 'Repay')
 
 	const usedAssets = [...new Set(filteredParsedPoolLogs.map(log=> log.args.reserve))]
-		console.log({usedAssets})
 
 	const prices = await Promise.all(usedAssets.map(async asset => await oracle.getAssetPrice(asset)))
 	const priceSheet = usedAssets.reduce(( sheet, asset, index ) => ( sheet[asset] = prices[index] , sheet), {})
-		console.log({priceSheet})
 
 	const decimals = await Promise.all(usedAssets.map(async asset => await new ethers.Contract(asset, erc20Abi, provider).decimals()))
 	const decimalsSheet = usedAssets.reduce(( sheet, asset, index ) => ( sheet[asset] = decimals[index] , sheet), {})
-		console.log({decimalsSheet})
 
 	const valueFilteredLogs = filteredParsedPoolLogs
 		.filter(log =>
 			BigInt(log.args.amount)
 				* BigInt(priceSheet[log.args.reserve])
-				/ BigInt(decimalsSheet[log.args.reserve])
-				/ BigInt( 10**8)
-			> BigInt(100/*0000*/)
+				/ BigInt(10**decimalsSheet[log.args.reserve])
+				/ BigInt(10**8)
+			> BigInt(10000/*00*/)
 		)
 
 		console.log({valueFilteredLogs})
