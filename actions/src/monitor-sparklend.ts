@@ -172,12 +172,17 @@ export const getProtocolInteraction: ActionFn = async (context: Context, event: 
 		console.log({decimalsSheet})
 
 	const valueFilteredLogs = filteredParsedPoolLogs
-		.filter(log => log.args.amount * priceSheet[log.args.reserve] / decimalsSheet[log.args.reserve] / 10**8 > 100/*0000*/)
+		.filter(log =>
+			BigInt(log.args.amount)
+				* BigInt(priceSheet[log.args.reserve])
+				/ BigInt(decimalsSheet[log.args.reserve])
+				/ BigInt( 10**8)
+			> BigInt(100/*0000*/)
+		)
 
 		console.log({valueFilteredLogs})
 
-
-	// for each item left send a Slack message
+	// for each item from valueFilteredLogs send a Slack message
 }
 
 const sendMessagesToSlack = async (messages: Array<string>, context: Context) => {
