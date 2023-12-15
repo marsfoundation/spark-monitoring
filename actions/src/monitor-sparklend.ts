@@ -138,6 +138,28 @@ export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: C
 	await sendMessagesToPagerDuty(messages, context);
 }
 
+export const getProtocolInteraction: ActionFn = async (context: Context, event: Event) => {
+	let txEvent = event as TransactionEvent;
+	const POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987";
+	const pool = new ethers.Contract(POOL_ADDRESS, poolAbi);
+
+	const parsedPoolLogs = txEvent.logs
+		.filter(log => log.address == POOL_ADDRESS)
+		.map(log => pool.interface.parseLog(log))
+		.filter(log => log.name == 'Supply' || log.name == 'Borrow' || log.name == 'Withdraw' || log.name == 'Repay')
+
+	console.log(parsedPoolLogs)
+
+	// get a list of the assets that are in the logs
+
+	// fetch price for each of the logs
+
+	// filter out all of the items that have USD value of less than 1.000.000 based on the fetched prices
+	// for stablecoins consider hardcoding price to 1 for that purpose
+
+	// for each item left send a Slack message
+}
+
 const sendMessagesToSlack = async (messages: Array<string>, context: Context) => {
 	const slackWebhookUrl = await context.secrets.get('SLACK_WEBHOOK_URL');
 
