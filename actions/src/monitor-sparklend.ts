@@ -302,8 +302,8 @@ Transaction hash: ${txEvent.hash}
 
 TRANSACTION DETAILS:
 Asset:  ${symbolsSheet[log.args.reserve]} (${log.args.reserve})
-Amount: ${formatBigInt(BigInt(log.args.amount), decimalsSheet[log.args.reserve])} ${symbolsSheet[log.args.reserve]}
-Value:  $${formatBigInt(BigInt(log.args.amount)
+Amount:   ${formatBigInt(BigInt(log.args.amount), decimalsSheet[log.args.reserve])} ${symbolsSheet[log.args.reserve]}
+Value:  $ ${formatBigInt(BigInt(log.args.amount)
 	* BigInt(priceSheet[log.args.reserve])
 	/ BigInt(10**decimalsSheet[log.args.reserve])
 	/ BigInt(10**6), 2)}
@@ -344,5 +344,6 @@ function formatBigInt(value: any, decimals: any) {
     const integerPart = BigInt(value) / BigInt(10 ** decimals);
     const fractionalPart = BigInt(value) % BigInt(10 ** decimals);
     const fractionalString = fractionalPart.toString().padStart(decimals, '0');
-    return `${integerPart}.${fractionalString}`;
+	const integerPartString = integerPart.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+    return `${integerPartString}.${fractionalString}`;
 }
