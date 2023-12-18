@@ -293,13 +293,12 @@ NOTE: USD diff derived from raw values, not from USD assets/liabilities.
 const formatProtocolInteractionAlertMessage = (log: any, txEvent: TransactionEvent, decimalsSheet: any, priceSheet: any, symbolsSheet: any) => {
 	return `
 \`\`\`
-TEST
-
 ${log.name.toUpperCase()}
 
 Account ${txEvent.from} performed a ${log.name.toLowerCase()} interaction.
 
 Transaction hash: ${txEvent.hash}
+(https://etherscan.io/tx/${txEvent.hash})
 
 TRANSACTION DETAILS:
 Asset:  ${symbolsSheet[log.args.reserve]} (${log.args.reserve})
