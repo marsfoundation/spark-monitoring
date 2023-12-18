@@ -164,18 +164,41 @@ export const getProtocolInteraction: ActionFn = async (context: Context, event: 
 	const decimals = await Promise.all(usedAssets.map(async asset => await new ethers.Contract(asset, erc20Abi, provider).decimals()))
 	const decimalsSheet = usedAssets.reduce(( sheet, asset, index ) => ( sheet[asset] = decimals[index] , sheet), {})
 
-	const valueFilteredLogs = filteredParsedPoolLogs
-		.filter(log =>
-			BigInt(log.args.amount)
+	const symbols = await Promise.all(usedAssets.map(async asset => await new ethers.Contract(asset, erc20Abi, provider).symbol()))
+	const symbolsSheet = usedAssets.reduce(( sheet, asset, index ) => ( sheet[asset] = symbols[index] , sheet), {})
+
+	const formattedActions = filteredParsedPoolLogs
+		.map(log => ({
+			value: BigInt(log.args.amount) // value in USD cents
 				* BigInt(priceSheet[log.args.reserve])
 				/ BigInt(10**decimalsSheet[log.args.reserve])
-				/ BigInt(10**8)
-			> BigInt(10000/*00*/)
-		)
+				/ BigInt(10**6),
+			message: formatProtocolInteractionAlertMessage(
+				log,
+				txEvent,
+				decimalsSheet,
+				priceSheet,
+				symbolsSheet,
+			)
+		}))
 
-		console.log({valueFilteredLogs})
 
-	// for each item from valueFilteredLogs send a Slack message
+	console.log(formattedActions.map(action => action.message))
+
+	const filteredActions = formattedActions
+		.filter(action => action.value > BigInt(1000000/*00*/)) // value bigger than $1.000.000 in cents
+
+	console.log(filteredActions.map(action => action.message))
+
+	const slackWebhookUrl = await context.secrets.get('SPARKLEND_ALERTS_SLACK_WEBHOOK_URL');
+
+	const slackResponses = await Promise.all(filteredActions.map(async (action) => {
+		await axios.post(slackWebhookUrl, { text: action.message });
+	}))
+
+	for (const slackResponse of slackResponses) {
+		console.log(slackResponse);
+	}
 }
 
 const sendMessagesToSlack = async (messages: Array<string>, context: Context) => {
@@ -263,6 +286,28 @@ Diff:        ${formatBigInt(BigInt(reserveInfo.usdDiff), 8)}
 
 NOTE: USD diff derived from raw values, not from USD assets/liabilities.
 
+\`\`\`
+	`
+}
+
+const formatProtocolInteractionAlertMessage = (log: any, txEvent: TransactionEvent, decimalsSheet: any, priceSheet: any, symbolsSheet: any) => {
+	return `
+\`\`\`
+TEST
+
+${log.name.toUpperCase()}
+
+Account ${txEvent.from} performed a ${log.name.toLowerCase()} interaction.
+
+Transaction hash: ${txEvent.hash}
+
+TRANSACTION DETAILS:
+Asset:  ${symbolsSheet[log.args.reserve]} (${log.args.reserve})
+Amount: ${formatBigInt(BigInt(log.args.amount), decimalsSheet[log.args.reserve])} ${symbolsSheet[log.args.reserve]}
+Value:  $${formatBigInt(BigInt(log.args.amount)
+	* BigInt(priceSheet[log.args.reserve])
+	/ BigInt(10**decimalsSheet[log.args.reserve])
+	/ BigInt(10**6), 2)}
 \`\`\`
 	`
 }
