@@ -186,7 +186,7 @@ export const getProtocolInteraction: ActionFn = async (context: Context, event: 
 	console.log(formattedActions.map(action => action.message))
 
 	const filteredActions = formattedActions
-		.filter(action => action.value > BigInt(1000000/*00*/)) // value bigger than $1.000.000 in cents
+		.filter(action => action.value > BigInt(100000000)) // value bigger than $1.000.000 in cents
 
 	console.log(filteredActions.map(action => action.message))
 
