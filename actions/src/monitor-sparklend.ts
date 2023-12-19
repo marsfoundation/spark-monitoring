@@ -171,8 +171,8 @@ export const getProtocolInteraction: ActionFn = async (context: Context, event: 
 		.map(log => ({
 			value: BigInt(log.args.amount) // value in USD cents
 				* BigInt(priceSheet[log.args.reserve])
-				/ BigInt(10**decimalsSheet[log.args.reserve])
-				/ BigInt(10**6),
+				/ BigInt(10 ** decimalsSheet[log.args.reserve])
+				/ BigInt(10 ** 6), // dividing by 10 ** 6, not 10 ** 8 because we want the result in USD cents
 			message: formatProtocolInteractionAlertMessage(
 				log,
 				txEvent,
@@ -305,8 +305,8 @@ Asset:  ${symbolsSheet[log.args.reserve]} (${log.args.reserve})
 Amount:   ${formatBigInt(BigInt(log.args.amount), decimalsSheet[log.args.reserve])} ${symbolsSheet[log.args.reserve]}
 Value:  $ ${formatBigInt(BigInt(log.args.amount)
 	* BigInt(priceSheet[log.args.reserve])
-	/ BigInt(10**decimalsSheet[log.args.reserve])
-	/ BigInt(10**6), 2)}
+	/ BigInt(10 ** decimalsSheet[log.args.reserve])
+	/ BigInt(10 ** 6), 2)} // dividing by 10 ** 6, not 10 ** 8 because we want the result in USD cents
 \`\`\`
 	`
 }
