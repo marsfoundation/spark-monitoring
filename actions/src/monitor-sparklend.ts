@@ -5,14 +5,16 @@ import {
 	TransactionEvent,
 } from '@tenderly/actions';
 
+import {
+	poolAbi,
+	oracleAbi,
+	erc20Abi,
+	sparklendHealthCheckerAbi,
+} from '../abis';
+
+import { formatBigInt } from './utils';
+
 const axios = require('axios');
-
-import poolAbi from '../jsons/pool-abi.json';
-import oracleAbi from '../jsons/oracle-abi.json';
-import erc20Abi from '../jsons/erc20-abi.json';
-
-import { abi as healthCheckerAbi } from '../jsons/SparkLendHealthChecker.json';
-
 const ethers = require('ethers');
 
 export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Event) => {
@@ -57,7 +59,7 @@ export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Ev
 
 	const provider = new ethers.providers.JsonRpcProvider(url);
 
-	const healthChecker = new ethers.Contract(HEALTH_CHECKER, healthCheckerAbi, provider);
+	const healthChecker = new ethers.Contract(HEALTH_CHECKER, sparklendHealthCheckerAbi, provider);
 
 	const userHealths = await Promise.all(users.map(async (user) => {
 		return {
@@ -106,7 +108,7 @@ export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: C
 
 	const provider = new ethers.providers.JsonRpcProvider(url);
 
-	const healthChecker = new ethers.Contract(HEALTH_CHECKER, healthCheckerAbi, provider);
+	const healthChecker = new ethers.Contract(HEALTH_CHECKER, sparklendHealthCheckerAbi, provider);
 	const oracle = new ethers.Contract(ORACLE, oracleAbi, provider);
 
 	const getAllReservesAssetLiabilityResponse = await healthChecker.getAllReservesAssetLiability();
@@ -338,12 +340,4 @@ LTV:              ${formatBigInt(BigInt(userHealth.ltv), 2)}%
 Health Factor:    ${formatBigInt(BigInt(userHealth.healthFactor), 18)}
 \`\`\`
 	`
-}
-
-function formatBigInt(value: any, decimals: any) {
-    const integerPart = BigInt(value) / BigInt(10 ** decimals);
-    const fractionalPart = BigInt(value) % BigInt(10 ** decimals);
-    const fractionalString = fractionalPart.toString().padStart(decimals, '0');
-	const integerPartString = integerPart.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,');
-    return `${integerPartString}.${fractionalString}`;
 }
