@@ -302,8 +302,8 @@ Transaction hash: ${txEvent.hash}
 
 TRANSACTION DETAILS:
 Asset:  ${symbolsSheet[log.args.reserve]} (${log.args.reserve})
-Amount:   ${formatBigInt(BigInt(log.args.amount), decimalsSheet[log.args.reserve])} ${symbolsSheet[log.args.reserve]}
-Value:  $ ${formatBigInt(BigInt(log.args.amount)
+Amount: ${formatBigInt(BigInt(log.args.amount), decimalsSheet[log.args.reserve])} ${symbolsSheet[log.args.reserve]}
+Value:  $${formatBigInt(BigInt(log.args.amount)
 	* BigInt(priceSheet[log.args.reserve])
 	/ BigInt(10 ** decimalsSheet[log.args.reserve])
 	/ BigInt(10 ** 6), 2)} // dividing by 10 ** 6, not 10 ** 8 because we want the result in USD cents
