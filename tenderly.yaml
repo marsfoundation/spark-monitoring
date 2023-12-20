@@ -33,7 +33,7 @@ actions:
 
       monitor-protocol-interactions:
         description: Monitors interactions with the protocol that involve funds of amounts at least $1.000.000 worth of assets
-        function: src/monitor-sparklend:getProtocolInteraction
+        function: src/index:getProtocolInteraction
         trigger:
           type: transaction
           transaction:
