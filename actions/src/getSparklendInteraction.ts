@@ -16,7 +16,7 @@ import { formatBigInt } from './utils';
 const axios = require('axios');
 const ethers = require('ethers');
 
-export const getProtocolInteraction: ActionFn = async (context: Context, event: Event) => {
+export const getSparklendInteraction: ActionFn = async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent;
 
 	const rpcUrl = await context.secrets.get('ETH_RPC_URL');

@@ -1,1 +1,1 @@
-export * from './getProtocolInteraction'
+export * from './getSparklendInteraction'
