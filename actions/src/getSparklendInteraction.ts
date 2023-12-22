@@ -3,32 +3,32 @@ import {
 	Context,
 	Event,
 	TransactionEvent,
-} from '@tenderly/actions';
+} from '@tenderly/actions'
 
 import {
 	poolAbi,
 	oracleAbi,
 	erc20Abi,
-} from './abis';
+} from './abis'
 
 import {
 	formatBigInt,
 	sendMessagesToSlack,
-} from './utils';
+} from './utils'
 
-const ethers = require('ethers');
+const ethers = require('ethers')
 
 export const getSparklendInteraction: ActionFn = async (context: Context, event: Event) => {
-	let txEvent = event as TransactionEvent;
+	let txEvent = event as TransactionEvent
 
-	const rpcUrl = await context.secrets.get('ETH_RPC_URL');
-	const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+	const rpcUrl = await context.secrets.get('ETH_RPC_URL')
+	const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
 
-	const POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987";
-	const pool = new ethers.Contract(POOL_ADDRESS, poolAbi);
+	const POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987"
+	const pool = new ethers.Contract(POOL_ADDRESS, poolAbi)
 
-	const ORACLE_ADDRESS = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9";
-	const oracle = new ethers.Contract(ORACLE_ADDRESS, oracleAbi, provider);
+	const ORACLE_ADDRESS = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
+	const oracle = new ethers.Contract(ORACLE_ADDRESS, oracleAbi, provider)
 
 	const filteredParsedPoolLogs = txEvent.logs
 		.filter(log => log.address.toLowerCase() == POOL_ADDRESS.toLowerCase())
