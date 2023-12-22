@@ -11,9 +11,11 @@ import {
 	erc20Abi,
 } from './abis';
 
-import { formatBigInt } from './utils';
+import {
+	formatBigInt,
+	sendMessagesToSlack,
+} from './utils';
 
-const axios = require('axios');
 const ethers = require('ethers');
 
 export const getSparklendInteraction: ActionFn = async (context: Context, event: Event) => {
@@ -67,15 +69,7 @@ export const getSparklendInteraction: ActionFn = async (context: Context, event:
 
 	console.log(filteredActions.map(action => action.message))
 
-	const slackWebhookUrl = await context.secrets.get('SPARKLEND_ALERTS_SLACK_WEBHOOK_URL');
-
-	const slackResponses = await Promise.all(filteredActions.map(async (action) => {
-		await axios.post(slackWebhookUrl, { text: action.message });
-	}))
-
-	for (const slackResponse of slackResponses) {
-		console.log(slackResponse);
-	}
+	await sendMessagesToSlack(filteredActions.map(action => action.message), context, 'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL')
 }
 
 const formatProtocolInteractionAlertMessage = (log: any, txEvent: TransactionEvent, decimalsSheet: any, priceSheet: any, symbolsSheet: any) => {
