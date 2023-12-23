@@ -1,0 +1,134 @@
+[
+    {
+        "type": "constructor",
+        "inputs": [
+            {
+                "name": "pool_",
+                "type": "address",
+                "internalType": "address"
+            },
+            {
+                "name": "dataProvider_",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "stateMutability": "nonpayable"
+    },
+    {
+        "type": "function",
+        "name": "getAllReservesAssetLiability",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "reserveData",
+                "type": "tuple[]",
+                "internalType": "struct SparkLendHealthChecker.ReserveAssetLiability[]",
+                "components": [
+                    {
+                        "name": "reserve",
+                        "type": "address",
+                        "internalType": "address"
+                    },
+                    {
+                        "name": "assets",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    },
+                    {
+                        "name": "liabilities",
+                        "type": "uint256",
+                        "internalType": "uint256"
+                    }
+                ]
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "getReserveAssetLiability",
+        "inputs": [
+            {
+                "name": "asset",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "assets",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "liabilities",
+                "type": "uint256",
+                "internalType": "uint256"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "getUserHealth",
+        "inputs": [
+            {
+                "name": "user",
+                "type": "address",
+                "internalType": "address"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "totalCollateralBase",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "totalDebtBase",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "availableBorrowsBase",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "currentLiquidationThreshold",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "ltv",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "healthFactor",
+                "type": "uint256",
+                "internalType": "uint256"
+            },
+            {
+                "name": "belowLiquidationThreshold",
+                "type": "bool",
+                "internalType": "bool"
+            }
+        ],
+        "stateMutability": "view"
+    },
+    {
+        "type": "function",
+        "name": "runChecks",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool",
+                "internalType": "bool"
+            }
+        ],
+        "stateMutability": "pure"
+    }
+]

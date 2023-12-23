@@ -7,7 +7,7 @@ actions:
     specs:
       monitor-user-health:
         description: Checks user's health factors after they interact with the protocol.
-        function: src/monitor-sparklend:getUserInfoSparkLend
+        function: src/index:getUserInfoSparkLend
         trigger:
           type: transaction
           transaction:
@@ -23,7 +23,7 @@ actions:
 
       monitor-asset-liabilities:
         description: Checks asset liability matching for each reserve.
-        function: src/monitor-sparklend:getAllReservesAssetLiabilitySparkLend
+        function: src/index:getAllReservesAssetLiabilitySparkLend
         trigger:
           type: block
           block:
@@ -32,8 +32,8 @@ actions:
             blocks: 5
 
       monitor-protocol-interactions:
-        description: Monitors interactions with the protocol that involve funds of amounts at least $1.000.000 worth of assets
-        function: src/monitor-sparklend:getProtocolInteraction
+        description: Monitors interactions with the Sparklend protocol that involve funds of amounts at least $1.000.000 worth of assets
+        function: src/index:getSparklendInteraction
         trigger:
           type: transaction
           transaction:
