@@ -18,7 +18,7 @@ import {
 
 const ethers = require('ethers')
 
-export const getUserInfoSparklend: ActionFn = async (context: Context, event: Event) => {
+export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent
 
 	// 1. Define contracts

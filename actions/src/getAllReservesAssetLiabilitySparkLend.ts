@@ -18,7 +18,7 @@ import {
 
 const ethers = require('ethers')
 
-export const getAllReservesAssetLiabilitySparklend: ActionFn = async (context: Context, event: Event) => {
+export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent
 
 	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B"
