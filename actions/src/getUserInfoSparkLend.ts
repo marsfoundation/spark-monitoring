@@ -3,71 +3,71 @@ import {
 	Context,
 	Event,
 	TransactionEvent,
-} from '@tenderly/actions';
+} from '@tenderly/actions'
 
 import {
 	poolAbi,
 	sparklendHealthCheckerAbi,
-} from './abis';
+} from './abis'
 
 import {
     formatBigInt,
 	sendMessagesToPagerDuty,
     sendMessagesToSlack,
-} from './utils';
+} from './utils'
 
-const ethers = require('ethers');
+const ethers = require('ethers')
 
 export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Event) => {
-	let txEvent = event as TransactionEvent;
+	let txEvent = event as TransactionEvent
 
 	// 1. Define contracts
 
-	const POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987";
-	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B";
+	const POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987"
+	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B"
 
-	const pool = new ethers.Contract(POOL_ADDRESS, poolAbi);
+	const pool = new ethers.Contract(POOL_ADDRESS, poolAbi)
 
 	// 2. Filter events logs to get all pool logs
 
 	const filteredLogs = txEvent.logs.filter(log => {
-		if (log.address !== POOL_ADDRESS) return;
+		if (log.address !== POOL_ADDRESS) return
 
 		try {
-			return pool.interface.parseLog(log);
+			return pool.interface.parseLog(log)
 		} catch (e) {
-			// console.log(e);
+			// console.log(e)
 		}
-	});
+	})
 
 	// 3. Get all `user` properties from logs, from all events that users adjust positions
 
-	let users: Array<string> = [];
+	let users: Array<string> = []
 
 	filteredLogs.forEach(log => {
-		const parsedLog = pool.interface.parseLog(log).args;
+		const parsedLog = pool.interface.parseLog(log).args
 		if (parsedLog.user) {
-			users.push(parsedLog.user);
+			users.push(parsedLog.user)
 		}
-	});
+	})
 
-	users.push(txEvent.from);
-	users = [...new Set(users)];  // Remove duplicates
+	users.push(txEvent.from)
+	users = [...new Set(users)]  // Remove duplicates
 
 	// 4. Get health of all users
 
-	const url = await context.secrets.get('ETH_RPC_URL');
+	const url = await context.secrets.get('ETH_RPC_URL')
 
-	const provider = new ethers.providers.JsonRpcProvider(url);
+	const provider = new ethers.providers.JsonRpcProvider(url)
 
-	const healthChecker = new ethers.Contract(HEALTH_CHECKER, sparklendHealthCheckerAbi, provider);
+	const healthChecker = new ethers.Contract(HEALTH_CHECKER, sparklendHealthCheckerAbi, provider)
 
 	const userHealths = await Promise.all(users.map(async (user) => {
 		return {
 			user,
 			...await healthChecker.getUserHealth(user)
 		}
-	}));
+	}))
 
 	console.log({users})
 	console.log({userHealths})
@@ -75,27 +75,27 @@ export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Ev
 	// 5. Filter userHealths to only users below liquidation threshold, exit if none
 
 	const usersBelowLT = userHealths.filter(userHealth => {
-		// return userHealth.healthFactor < 2e18;  // TESTING
-		return userHealth.belowLiquidationThreshold;
-		// return true;  // UNCOMMENT AND REPLACE FOR TESTING
-	});
+		// return userHealth.healthFactor < 2e18  // TESTING
+		return userHealth.belowLiquidationThreshold
+		// return true  // UNCOMMENT AND REPLACE FOR TESTING
+	})
 
 	if (usersBelowLT.length === 0) {
-		console.log("No users below liquidation threshold");
-		return;
+		console.log("No users below liquidation threshold")
+		return
 	}
 
 	// 6. Generate messages for each user below liquidation threshold and send to Slack and PagerDuty
 
 	const messages = usersBelowLT.map(userHealth => {
-		return formatUserHealthAlertMessage(userHealth, txEvent);
+		return formatUserHealthAlertMessage(userHealth, txEvent)
 	})
 
-	if (messages.length === 0) return;
+	if (messages.length === 0) return
 
-	await sendMessagesToSlack(messages, context, 'SLACK_WEBHOOK_URL');
+	await sendMessagesToSlack(messages, context, 'SLACK_WEBHOOK_URL')
 
-	await sendMessagesToPagerDuty(messages, context);
+	await sendMessagesToPagerDuty(messages, context)
 }
 
 const formatUserHealthAlertMessage = (userHealth: any, txEvent: TransactionEvent) => {

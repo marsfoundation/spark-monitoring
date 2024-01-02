@@ -3,75 +3,75 @@ import {
 	Context,
 	Event,
 	TransactionEvent,
-} from '@tenderly/actions';
+} from '@tenderly/actions'
 
 import {
 	oracleAbi,
 	sparklendHealthCheckerAbi,
-} from './abis';
+} from './abis'
 
 import {
 	formatBigInt,
 	sendMessagesToPagerDuty,
     sendMessagesToSlack,
-} from './utils';
+} from './utils'
 
-const ethers = require('ethers');
+const ethers = require('ethers')
 
 export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: Context, event: Event) => {
-	let txEvent = event as TransactionEvent;
+	let txEvent = event as TransactionEvent
 
-	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B";
-	const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f";
-	const ORACLE = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9";
+	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B"
+	const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
+	const ORACLE = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
 
-	const url = await context.secrets.get('ETH_RPC_URL');
+	const url = await context.secrets.get('ETH_RPC_URL')
 
-	const provider = new ethers.providers.JsonRpcProvider(url);
+	const provider = new ethers.providers.JsonRpcProvider(url)
 
-	const healthChecker = new ethers.Contract(HEALTH_CHECKER, sparklendHealthCheckerAbi, provider);
-	const oracle = new ethers.Contract(ORACLE, oracleAbi, provider);
+	const healthChecker = new ethers.Contract(HEALTH_CHECKER, sparklendHealthCheckerAbi, provider)
+	const oracle = new ethers.Contract(ORACLE, oracleAbi, provider)
 
-	const getAllReservesAssetLiabilityResponse = await healthChecker.getAllReservesAssetLiability();
+	const getAllReservesAssetLiabilityResponse = await healthChecker.getAllReservesAssetLiability()
 
-	let messages = [];
+	let messages = []
 
 	for (const reserveInfo of getAllReservesAssetLiabilityResponse) {
-		const diff = BigInt(reserveInfo.assets) - BigInt(reserveInfo.liabilities);
-		const price = await oracle.getAssetPrice(reserveInfo.reserve);
-		const usdDiff = diff * BigInt(price) / BigInt(10 ** 18);
+		const diff = BigInt(reserveInfo.assets) - BigInt(reserveInfo.liabilities)
+		const price = await oracle.getAssetPrice(reserveInfo.reserve)
+		const usdDiff = diff * BigInt(price) / BigInt(10 ** 18)
 
-		let MAX_DIFF = 1_000 * 10 ** 8;  // 1k USD diff to trigger alert
+		let MAX_DIFF = 1_000 * 10 ** 8  // 1k USD diff to trigger alert
 
 		if (reserveInfo.reserve.toLowerCase() === DAI.toLowerCase()) {
-			MAX_DIFF = 300_000 * 10 ** 8;
+			MAX_DIFF = 300_000 * 10 ** 8
 		}
 
 		// Check that the absolute value of the difference is less than the max diff
 		if (usdDiff < MAX_DIFF && usdDiff > -MAX_DIFF) {
-			continue;  // COMMENT OUT FOR TESTING
+			continue  // COMMENT OUT FOR TESTING
 		}
 
-		messages.push(await formatAssetLiabilityAlertMessage({...reserveInfo, diff, usdDiff, price}, txEvent, provider));
+		messages.push(await formatAssetLiabilityAlertMessage({...reserveInfo, diff, usdDiff, price}, txEvent, provider))
 	}
 
-	if (messages.length === 0) return;
+	if (messages.length === 0) return
 
-	await sendMessagesToSlack(messages, context, 'SLACK_WEBHOOK_URL');
+	await sendMessagesToSlack(messages, context, 'SLACK_WEBHOOK_URL')
 
-	await sendMessagesToPagerDuty(messages, context);
+	await sendMessagesToPagerDuty(messages, context)
 }
 
 const formatAssetLiabilityAlertMessage = async (reserveInfo: any, txEvent: any, provider: any) => {
-	const tokenAbi = ["function symbol() view returns (string)"];
+	const tokenAbi = ["function symbol() view returns (string)"]
 
-	const token = new ethers.Contract(reserveInfo.reserve, tokenAbi, provider);
+	const token = new ethers.Contract(reserveInfo.reserve, tokenAbi, provider)
 
-	const tokenSymbol = await token.symbol();
+	const tokenSymbol = await token.symbol()
 
 	// 8 decimal representation
-	const usdAssets = BigInt(reserveInfo.assets) * BigInt(reserveInfo.price) / BigInt(10 ** 18);
-	const usdLiabilities = BigInt(reserveInfo.liabilities) * BigInt(reserveInfo.price) / BigInt(10 ** 18);
+	const usdAssets = BigInt(reserveInfo.assets) * BigInt(reserveInfo.price) / BigInt(10 ** 18)
+	const usdLiabilities = BigInt(reserveInfo.liabilities) * BigInt(reserveInfo.price) / BigInt(10 ** 18)
 
 	return `
 \`\`\`
