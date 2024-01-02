@@ -18,7 +18,7 @@ import {
 
 const ethers = require('ethers')
 
-export const getSparklendInteraction: ActionFn = async (context: Context, event: Event) => {
+export const getProtocolInteractionSparkLend: ActionFn = async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent
 
 	const rpcUrl = await context.secrets.get('ETH_RPC_URL')
