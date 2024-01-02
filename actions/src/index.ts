@@ -1,3 +1,3 @@
 export * from './getAllReservesAssetLiabilitySparkLend'
-export * from './getSparklendInteraction'
+export * from './getProtocolInteractionSparkLend'
 export * from './getUserInfoSparkLend'
