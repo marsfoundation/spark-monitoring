@@ -158,17 +158,13 @@ const formatProtocolInteractionAlertMessage = (
 
 	return `
 		\`\`\`
-Action: ${log.name.toUpperCase()} ${assetData[log.args.reserve].symbol} $${formatBigInt(transactionValue/BigInt(10 ** 7), 1)}M
-User:   ${txEvent.from.slice(0, 5)}...${txEvent.from.slice(37, 41)}
-Pool:   $${totalSupplyValue/BigInt(10 ** 8)}M (util. ${poolUtilization}%)
+${log.name.toUpperCase()}: ${formatBigInt(BigInt(log.args.amount)/BigInt( 10 ** assetData[log.args.reserve].decimals), 0)} ${assetData[log.args.reserve].symbol} ($${formatBigInt(transactionValue/BigInt(10 ** 7), 1)}M)
+USER:   ${txEvent.from.slice(0, 7)}...${txEvent.from.slice(36, 41)}
+POOL:   $${totalSupplyValue/BigInt(10 ** 8)}M (util. ${poolUtilization}%)
 
-Account ${txEvent.from} performed a ${log.name.toLowerCase()} interaction.
-
+${txEvent.from}
 COLLATERAL ($${formatBigInt(totalCollateralValue/BigInt(10 ** 7), 1)}M):${collateralPositions.join('')}
 DEBT ($${formatBigInt(totalDebtValue/BigInt(10 ** 7), 1)}M):${debtPositions.join('')}
-
-TRANSACTION DETAILS:
-	${formatBigInt(BigInt(log.args.amount)/BigInt( 10 ** assetData[log.args.reserve].decimals), 0)} ${assetData[log.args.reserve].symbol} ($${formatBigInt(transactionValue/BigInt(10 ** 7), 1)}M)
 
 Transaction hash: ${txEvent.hash}
 (https://etherscan.io/tx/${txEvent.hash})\`\`\``
