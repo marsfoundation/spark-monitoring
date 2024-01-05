@@ -164,11 +164,11 @@ Pool:   $${totalSupplyValue/BigInt(10 ** 8)}M (util. ${poolUtilization}%)
 
 Account ${txEvent.from} performed a ${log.name.toLowerCase()} interaction.
 
-TRANSACTION DETAILS:
-	${formatBigInt(BigInt(log.args.amount)/BigInt( 10 ** assetData[log.args.reserve].decimals), 0)} ${assetData[log.args.reserve].symbol} ($${formatBigInt(transactionValue/BigInt(10 ** 7), 1)}M)
-
 COLLATERAL ($${formatBigInt(totalCollateralValue/BigInt(10 ** 7), 1)}M):${collateralPositions.join('')}
 DEBT ($${formatBigInt(totalDebtValue/BigInt(10 ** 7), 1)}M):${debtPositions.join('')}
+
+TRANSACTION DETAILS:
+	${formatBigInt(BigInt(log.args.amount)/BigInt( 10 ** assetData[log.args.reserve].decimals), 0)} ${assetData[log.args.reserve].symbol} ($${formatBigInt(transactionValue/BigInt(10 ** 7), 1)}M)
 
 Transaction hash: ${txEvent.hash}
 (https://etherscan.io/tx/${txEvent.hash})\`\`\``
