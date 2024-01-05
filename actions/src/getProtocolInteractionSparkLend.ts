@@ -119,9 +119,7 @@ const formatProtocolInteractionAlertMessage = (
 	}))
 	.filter(position => position.value > BigInt(100000)) // value bigger than $1.000 in cents
 	.map(position => `
-	= ${position.symbol} =
-		Amount: ${formatBigInt(BigInt(position.amount), position.decimals)} ${position.symbol}
-		Value:  $${formatBigInt(BigInt(position.value), 2)}`)
+	${formatBigInt(BigInt(position.amount)/BigInt(10 ** position.decimals), 0)} ${position.symbol} ($${formatBigInt(BigInt(position.value)/BigInt(10 ** 7), 1)}M)`)
 
 	const totalCollateralValue = Object.keys(assetData)
 		.map(asset => assetData[asset].usersCollateral.value)
@@ -136,10 +134,7 @@ const formatProtocolInteractionAlertMessage = (
 	}))
 	.filter(position => position.value > BigInt(100000)) // value bigger than $1.000 in cents
 	.map(position => `
-	= ${position.symbol} =
-		Amount: ${formatBigInt(BigInt(position.amount), position.decimals)} ${position.symbol}
-		Value:  $${formatBigInt(BigInt(position.value), 2)}
-	`)
+	${formatBigInt(BigInt(position.amount)/BigInt(10 ** position.decimals), 0)} ${position.symbol} ($${formatBigInt(BigInt(position.value)/BigInt(10 ** 7), 1)}M)`)
 
 	const totalDebtValue = Object.keys(assetData)
 		.map(asset => assetData[asset].usersDebt.value)
@@ -163,25 +158,18 @@ const formatProtocolInteractionAlertMessage = (
 
 	return `
 		\`\`\`
-Action: ${log.name.toUpperCase()} ${assetData[log.args.reserve].symbol} $${formatBigInt(transactionValue/BigInt(10 ** 6), 2)}M
+Action: ${log.name.toUpperCase()} ${assetData[log.args.reserve].symbol} $${formatBigInt(transactionValue/BigInt(10 ** 7), 1)}M
 User:   ${txEvent.from.slice(0, 5)}...${txEvent.from.slice(37, 41)}
 Pool:   $${totalSupplyValue/BigInt(10 ** 8)}M (util. ${poolUtilization}%)
 
 Account ${txEvent.from} performed a ${log.name.toLowerCase()} interaction.
 
-Transaction hash: ${txEvent.hash}
-(https://etherscan.io/tx/${txEvent.hash})
-
 TRANSACTION DETAILS:
-Asset:  ${assetData[log.args.reserve].symbol} (${log.args.reserve})
-Amount: ${formatBigInt(BigInt(log.args.amount), assetData[log.args.reserve].decimals)} ${assetData[log.args.reserve].symbol}
-Value:  $${formatBigInt(transactionValue, 2)}
+	${formatBigInt(BigInt(log.args.amount)/BigInt( 10 ** assetData[log.args.reserve].decimals), 0)} ${assetData[log.args.reserve].symbol} ($${formatBigInt(transactionValue/BigInt(10 ** 7), 1)}M)
 
-CURRENT POSITIONS:
-COLLATERAL:
-(total: $${formatBigInt(totalCollateralValue, 2)})${collateralPositions.join('')}
-DEBT:
-(total: $${formatBigInt(totalDebtValue, 2)})${debtPositions.join('')}
-		\`\`\`
-	`
+COLLATERAL ($${formatBigInt(totalCollateralValue/BigInt(10 ** 7), 1)}M):${collateralPositions.join('')}
+DEBT ($${formatBigInt(totalDebtValue/BigInt(10 ** 7), 1)}M):${debtPositions.join('')}
+
+Transaction hash: ${txEvent.hash}
+(https://etherscan.io/tx/${txEvent.hash})\`\`\``
 }
