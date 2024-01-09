@@ -35,11 +35,5 @@ actions:
         description: Monitors interactions with the Sparklend protocol that involve funds of amounts at least $1.000.000 worth of assets
         function: src/index:getProtocolInteractionSparkLend
         trigger:
-          type: transaction
-          transaction:
-            status:
-              - mined
-            filters:
-              - network: 1
-                status: success
-                to: 0xC13e21B648A5Ee794902342038FF3aDAB66BE987
+          type: alert
+          alert: {}
