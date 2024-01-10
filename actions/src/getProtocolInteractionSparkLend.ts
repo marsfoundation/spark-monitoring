@@ -23,9 +23,10 @@ const ORACLE_ADDRESS = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
 
 export const getProtocolInteractionSparkLend: ActionFn = async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent
+	console.log({alertId: txEvent?.alertId})
 
 	const rpcUrl = await context.secrets.get('ETH_RPC_URL')
-	const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
+	const provider = new ethers.JsonRpcProvider(rpcUrl)
 
 	const pool = new ethers.Contract(POOL_ADDRESS, poolAbi, provider)
 	const oracle = new ethers.Contract(ORACLE_ADDRESS, oracleAbi, provider)
@@ -68,7 +69,7 @@ export const getProtocolInteractionSparkLend: ActionFn = async (context: Context
 	const filteredParsedPoolLogs = txEvent.logs
 		.filter(log => log.address.toLowerCase() == POOL_ADDRESS.toLowerCase())
 		.map(log => pool.interface.parseLog(log))
-		.filter(log => log.name == 'Supply' || log.name == 'Borrow' || log.name == 'Withdraw' || log.name == 'Repay')
+		.filter(log => log?.name == 'Supply' || log?.name == 'Borrow' || log?.name == 'Withdraw' || log?.name == 'Repay')
 
 	const formattedActions = filteredParsedPoolLogs
 		.map(log => processLog(log, txEvent, assetData))

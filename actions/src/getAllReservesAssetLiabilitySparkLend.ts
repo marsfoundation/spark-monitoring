@@ -27,7 +27,7 @@ export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: C
 
 	const url = await context.secrets.get('ETH_RPC_URL')
 
-	const provider = new ethers.providers.JsonRpcProvider(url)
+	const provider = new ethers.JsonRpcProvider(url)
 
 	const healthChecker = new ethers.Contract(HEALTH_CHECKER, sparklendHealthCheckerAbi, provider)
 	const oracle = new ethers.Contract(ORACLE, oracleAbi, provider)
