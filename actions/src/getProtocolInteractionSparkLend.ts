@@ -23,7 +23,6 @@ const ORACLE_ADDRESS = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
 
 export const getProtocolInteractionSparkLend: ActionFn = async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent
-	console.log({alertId: txEvent?.alertId})
 
 	const rpcUrl = await context.secrets.get('ETH_RPC_URL')
 	const provider = new ethers.JsonRpcProvider(rpcUrl)
@@ -34,7 +33,7 @@ export const getProtocolInteractionSparkLend: ActionFn = async (context: Context
 	const assets = await pool.getReservesList() as any[]
 
 	const prices = await Promise.all(assets.map(async asset => await oracle.getAssetPrice(asset)))
-	const decimals = await Promise.all(assets.map(async asset => await new ethers.Contract(asset, erc20Abi, provider).decimals()))
+	const decimals = await Promise.all(assets.map(async asset => (await new ethers.Contract(asset, erc20Abi, provider).decimals())))
 	const symbols = await Promise.all(assets.map(async asset => await new ethers.Contract(asset, erc20Abi, provider).symbol()))
 	const reserveDataSets = await Promise.all(assets.map(async asset => await pool.getReserveData(asset)))
 	const totalSupply =  await Promise.all(assets.map(async (_ ,index) => await new ethers.Contract(reserveDataSets[index][8], erc20Abi, provider).totalSupply()))
@@ -52,7 +51,7 @@ export const getProtocolInteractionSparkLend: ActionFn = async (context: Context
 				balance: collateralPositions[index],
 				value: BigInt(collateralPositions[index])
 					* BigInt(prices[index])
-					/ BigInt(10 ** decimals[index])
+					/ BigInt(BigInt(10) ** BigInt(decimals[index]))
 					/ BigInt(10 ** 6) // dividing by 10 ** 6, not 10 ** 8 because we want the result in USD cents
 			},
 			totalDebt: totalDebt[index],
@@ -60,7 +59,7 @@ export const getProtocolInteractionSparkLend: ActionFn = async (context: Context
 				balance: debtPositions[index],
 				value: BigInt(debtPositions[index])
 					* BigInt(prices[index])
-					/ BigInt(10 ** decimals[index])
+					/ BigInt(BigInt(10) ** BigInt(decimals[index]))
 					/ BigInt(10 ** 6) // dividing by 10 ** 6, not 10 ** 8 because we want the result in USD cents
 			},
 		}, assetData
@@ -70,6 +69,7 @@ export const getProtocolInteractionSparkLend: ActionFn = async (context: Context
 		.filter(log => log.address.toLowerCase() == POOL_ADDRESS.toLowerCase())
 		.map(log => pool.interface.parseLog(log))
 		.filter(log => log?.name == 'Supply' || log?.name == 'Borrow' || log?.name == 'Withdraw' || log?.name == 'Repay')
+
 
 	const formattedActions = filteredParsedPoolLogs
 		.map(log => processLog(log, txEvent, assetData))
@@ -90,15 +90,15 @@ const processLog = (
 	assetData: any,
 ) => {
 	const value = BigInt(log.args.amount) // value in USD cents
-		* BigInt(assetData[log.args.reserve].price)
-		/ BigInt(10 ** assetData[log.args.reserve].decimals)
-		/ BigInt(10 ** 6) // dividing by 10 ** 6, not 10 ** 8 because we want the result in USD cents
+	* BigInt(assetData[log.args.reserve].price)
+	/ BigInt(BigInt(10) ** BigInt(assetData[log.args.reserve].decimals))
+	/ BigInt(10 ** 6) // dividing by 10 ** 6, not 10 ** 8 because we want the result in USD cents
 
 	const message = formatProtocolInteractionAlertMessage(
 		log,
 		txEvent,
 		assetData,
-	)
+		)
 
 	return {
 		value,
@@ -118,9 +118,9 @@ const formatProtocolInteractionAlertMessage = (
 		amount: assetData[asset].usersCollateral.balance,
 		value: assetData[asset].usersCollateral.value,
 	}))
-	.filter(position => position.value > BigInt(100000)) // value bigger than $1.000 in cents
-	.map(position => `
-	${formatBigInt(BigInt(position.amount)/BigInt(10 ** position.decimals), 0)} ${position.symbol} ($${formatBigInt(BigInt(position.value)/BigInt(10 ** 7), 1)}M)`)
+		.filter(position => position.value > BigInt(100000)) // value bigger than $1.000 in cents
+		.map(position => `
+	${formatBigInt(BigInt(position.amount)/BigInt(BigInt(10) ** BigInt(position.decimals)), 0)} ${position.symbol} ($${formatBigInt(BigInt(position.value)/BigInt(10 ** 7), 1)}M)`)
 
 	const totalCollateralValue = Object.keys(assetData)
 		.map(asset => assetData[asset].usersCollateral.value)
@@ -133,9 +133,9 @@ const formatProtocolInteractionAlertMessage = (
 		amount: assetData[asset].usersDebt.balance,
 		value: assetData[asset].usersDebt.value,
 	}))
-	.filter(position => position.value > BigInt(100000)) // value bigger than $1.000 in cents
-	.map(position => `
-	${formatBigInt(BigInt(position.amount)/BigInt(10 ** position.decimals), 0)} ${position.symbol} ($${formatBigInt(BigInt(position.value)/BigInt(10 ** 7), 1)}M)`)
+		.filter(position => position.value > BigInt(100000)) // value bigger than $1.000 in cents
+		.map(position => `
+	${formatBigInt(BigInt(position.amount)/BigInt(BigInt(10) ** BigInt(position.decimals)), 0)} ${position.symbol} ($${formatBigInt(BigInt(position.value)/BigInt(10 ** 7), 1)}M)`)
 
 	const totalDebtValue = Object.keys(assetData)
 		.map(asset => assetData[asset].usersDebt.value)
@@ -144,12 +144,12 @@ const formatProtocolInteractionAlertMessage = (
 
 	const transactionValue = BigInt(log.args.amount)
 		* BigInt(assetData[log.args.reserve].price)
-		/ BigInt(10 ** assetData[log.args.reserve].decimals)
+		/ BigInt(BigInt(10) ** BigInt(assetData[log.args.reserve].decimals))
 		/ BigInt(10 ** 6)
 
 	const totalSupplyValue = BigInt(assetData[log.args.reserve].totalSupply)
 		* BigInt(assetData[log.args.reserve].price)
-		/ BigInt(10 ** assetData[log.args.reserve].decimals)
+		/ BigInt(BigInt(10) ** BigInt(assetData[log.args.reserve].decimals))
 		/ BigInt(10 ** 6)
 
 	const poolUtilization = BigInt(100)
@@ -159,7 +159,7 @@ const formatProtocolInteractionAlertMessage = (
 
 	return `
 		\`\`\`
-${log.name.toUpperCase()}: ${formatBigInt(BigInt(log.args.amount)/BigInt( 10 ** assetData[log.args.reserve].decimals), 0)} ${assetData[log.args.reserve].symbol} ($${formatBigInt(transactionValue/BigInt(10 ** 7), 1)}M)
+${log.name.toUpperCase()}: ${formatBigInt(BigInt(log.args.amount)/BigInt( BigInt(10) ** BigInt(assetData[log.args.reserve].decimals)), 0)} ${assetData[log.args.reserve].symbol} ($${formatBigInt(transactionValue/BigInt(10 ** 7), 1)}M)
 USER:   ${txEvent.from.slice(0, 7)}...${txEvent.from.slice(36, 41)}
 POOL:   $${totalSupplyValue/BigInt(10 ** 8)}M (util. ${poolUtilization}%)
 
