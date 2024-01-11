@@ -58,7 +58,7 @@ export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Ev
 
 	const url = await context.secrets.get('ETH_RPC_URL')
 
-	const provider = new ethers.providers.JsonRpcProvider(url)
+	const provider = new ethers.JsonRpcProvider(url)
 
 	const healthChecker = new ethers.Contract(HEALTH_CHECKER, sparklendHealthCheckerAbi, provider)
 
