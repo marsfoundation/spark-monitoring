@@ -37,3 +37,10 @@ actions:
         trigger:
           type: alert
           alert: {}
+
+      monitor-aave-config-changes:
+        description: Reports changes to the Aave V3 protocol
+        function: src/getConfigurationChangeAave:getConfigurationChangeAave
+        trigger:
+          type: alert
+          alert: {}
