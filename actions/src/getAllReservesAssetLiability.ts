@@ -18,19 +18,23 @@ import {
 
 const ethers = require('ethers')
 
-export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: Context, event: Event) => {
+const SPARKLEND_ORACLE = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
+const SPARKLEND_HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B"
+
+const AAVE_ORACLE = "0x54586bE62E3c3580375aE3723C145253060Ca0C2"
+const AAVE_HEALTH_CHECKER = "0xB75927FbB797d4f568FF782d2B21911015dd52f3"
+
+const getAllReservesAssetLiability = (oracleAddress: string, healthCheckerAddress: string, slackWebhookUrl: string) => async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent
 
-	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B"
 	const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
-	const ORACLE = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
 
 	const url = await context.secrets.get('ETH_RPC_URL')
 
 	const provider = new ethers.JsonRpcProvider(url)
 
-	const healthChecker = new ethers.Contract(HEALTH_CHECKER, sparklendHealthCheckerAbi, provider)
-	const oracle = new ethers.Contract(ORACLE, oracleAbi, provider)
+	const healthChecker = new ethers.Contract(healthCheckerAddress, sparklendHealthCheckerAbi, provider)
+	const oracle = new ethers.Contract(oracleAddress, oracleAbi, provider)
 
 	const getAllReservesAssetLiabilityResponse = await healthChecker.getAllReservesAssetLiability()
 
@@ -57,7 +61,7 @@ export const getAllReservesAssetLiabilitySparkLend: ActionFn = async (context: C
 
 	if (messages.length === 0) return
 
-	await sendMessagesToSlack(messages, context, 'SLACK_WEBHOOK_URL')
+	await sendMessagesToSlack(messages, context, slackWebhookUrl)
 
 	await sendMessagesToPagerDuty(messages, context)
 }
@@ -104,3 +108,15 @@ NOTE: USD diff derived from raw values, not from USD assets/liabilities.
 \`\`\`
 	`
 }
+
+export const getAllReservesAssetLiabilitySparkLend = getAllReservesAssetLiability(
+	SPARKLEND_ORACLE,
+	SPARKLEND_HEALTH_CHECKER,
+	'SLACK_WEBHOOK_URL'
+)
+
+export const getAllReservesAssetLiabilityAave = getAllReservesAssetLiability(
+	AAVE_ORACLE,
+	AAVE_HEALTH_CHECKER,
+	'AAVE_ALERTS_SLACK_WEBHOOK_URL'
+)
