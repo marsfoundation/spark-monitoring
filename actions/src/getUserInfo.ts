@@ -18,20 +18,24 @@ import {
 
 const ethers = require('ethers')
 
-export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Event) => {
+const SPARKLEND_POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987"
+const SPARKLEND_HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B"
+
+const AAVE_POOL_ADDRESS = "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2"
+const AAVE_HEALTH_CHECKER = "0xB75927FbB797d4f568FF782d2B21911015dd52f3"
+
+const getUserInfo = (poolAddress: string, healthCheckerAddress: string, slackWebhookUrl: string) => async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent
 
 	// 1. Define contracts
 
-	const POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987"
-	const HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B"
 
-	const pool = new ethers.Contract(POOL_ADDRESS, poolAbi)
+	const pool = new ethers.Contract(poolAddress, poolAbi)
 
 	// 2. Filter events logs to get all pool logs
 
 	const filteredLogs = txEvent.logs.filter(log => {
-		if (log.address !== POOL_ADDRESS) return
+		if (log.address !== poolAddress) return
 
 		try {
 			return pool.interface.parseLog(log)
@@ -60,7 +64,7 @@ export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Ev
 
 	const provider = new ethers.JsonRpcProvider(url)
 
-	const healthChecker = new ethers.Contract(HEALTH_CHECKER, sparklendHealthCheckerAbi, provider)
+	const healthChecker = new ethers.Contract(healthCheckerAddress, sparklendHealthCheckerAbi, provider)
 
 	const userHealths = await Promise.all(users.map(async (user) => {
 		return {
@@ -93,7 +97,7 @@ export const getUserInfoSparkLend: ActionFn = async (context: Context, event: Ev
 
 	if (messages.length === 0) return
 
-	await sendMessagesToSlack(messages, context, 'SLACK_WEBHOOK_URL')
+	await sendMessagesToSlack(messages, context, slackWebhookUrl)
 
 	await sendMessagesToPagerDuty(messages, context)
 }
@@ -126,3 +130,15 @@ Health Factor:    ${formatBigInt(BigInt(userHealth.healthFactor), 18)}
 \`\`\`
 	`
 }
+
+export const getUserInfoSparkLend = getUserInfo(
+	SPARKLEND_POOL_ADDRESS,
+	SPARKLEND_HEALTH_CHECKER,
+	'SLACK_WEBHOOK_URL',
+)
+
+export const getUserInfoAave = getUserInfo(
+	AAVE_POOL_ADDRESS,
+	AAVE_HEALTH_CHECKER,
+	'AAVE_ALERTS_SLACK_WEBHOOK_URL',
+	)
