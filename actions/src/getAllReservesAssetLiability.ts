@@ -66,6 +66,9 @@ const getAllReservesAssetLiability = (oracleAddress: string, healthCheckerAddres
 }
 
 const formatAssetLiabilityAlertMessage = async (reserveInfo: any, txEvent: any, provider: any) => {
+	console.log({reserveInfo})
+	console.log({reserve: reserveInfo.reserve})
+
 	const tokenAbi = ["function symbol() view returns (string)"]
 
 	const token = new ethers.Contract(reserveInfo.reserve, tokenAbi, provider)
