@@ -18,10 +18,10 @@ import {
 
 const ethers = require('ethers')
 
-const SPARKLEND_POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987"
+const SPARKLEND_POOL = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987"
 const SPARKLEND_HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B"
 
-const AAVE_POOL_ADDRESS = "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2"
+const AAVE_POOL = "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2"
 const AAVE_HEALTH_CHECKER = "0xB75927FbB797d4f568FF782d2B21911015dd52f3"
 
 const getUserInfo = (poolAddress: string, healthCheckerAddress: string, slackWebhookUrl: string) => async (context: Context, event: Event) => {
@@ -132,13 +132,13 @@ Health Factor:    ${formatBigInt(BigInt(userHealth.healthFactor), 18)}
 }
 
 export const getUserInfoSparkLend = getUserInfo(
-	SPARKLEND_POOL_ADDRESS,
+	SPARKLEND_POOL,
 	SPARKLEND_HEALTH_CHECKER,
 	'SLACK_WEBHOOK_URL',
 )
 
 export const getUserInfoAave = getUserInfo(
-	AAVE_POOL_ADDRESS,
+	AAVE_POOL,
 	AAVE_HEALTH_CHECKER,
 	'AAVE_ALERTS_SLACK_WEBHOOK_URL',
 	)
