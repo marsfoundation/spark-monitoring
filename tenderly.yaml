@@ -47,6 +47,16 @@ actions:
               - 1
             blocks: 5
 
+      monitor-asset-liabilities-aave:
+        description: Checks asset liability matching for each reserve in Aave protocol.
+        function: src/index:getAllReservesAssetLiabilityAave
+        trigger:
+          type: block
+          block:
+            network:
+              - 1
+            blocks: 5
+
       monitor-protocol-interactions:
         description: Monitors interactions with the Sparklend protocol that involve funds of amounts at least $1.000.000 worth of assets
         function: src/index:getProtocolInteractionSparkLend
