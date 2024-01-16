@@ -21,6 +21,22 @@ actions:
                 # Transaction must have been sent to Pool address
                 to: 0xC13e21B648A5Ee794902342038FF3aDAB66BE987
 
+      monitor-user-health-aave:
+        description: Checks Aave user's health factors after they interact with the protocol.
+        function: src/index:getUserInfoAave
+        trigger:
+          type: transaction
+          transaction:
+            status:
+              - mined
+            filters:
+              # Transaction must be from the network with network ID 1 (mainnet)
+              - network: 1
+                # Transaction must have failed
+                status: success
+                # Transaction must have been sent to Pool address
+                to: 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2
+
       monitor-asset-liabilities:
         description: Checks asset liability matching for each reserve.
         function: src/index:getAllReservesAssetLiabilitySparkLend
