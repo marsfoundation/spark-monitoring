@@ -7,7 +7,7 @@ actions:
     specs:
       monitor-user-health:
         description: Checks user's health factors after they interact with the protocol.
-        function: src/index:getUserInfoSparkLend
+        function: src/getUserInfo:getUserInfoSparkLend
         trigger:
           type: transaction
           transaction:
@@ -23,7 +23,7 @@ actions:
 
       monitor-user-health-aave:
         description: Checks Aave user's health factors after they interact with the protocol.
-        function: src/index:getUserInfoAave
+        function: src/getUserInfo:getUserInfoAave
         trigger:
           type: transaction
           transaction:
@@ -39,7 +39,7 @@ actions:
 
       monitor-asset-liabilities:
         description: Checks asset liability matching for each reserve.
-        function: src/index:getAllReservesAssetLiabilitySparkLend
+        function: src/getAllReservesAssetLiability:getAllReservesAssetLiabilitySparkLend
         trigger:
           type: block
           block:
@@ -49,7 +49,7 @@ actions:
 
       monitor-asset-liabilities-aave:
         description: Checks asset liability matching for each reserve in Aave protocol.
-        function: src/index:getAllReservesAssetLiabilityAave
+        function: src/getAllReservesAssetLiability:getAllReservesAssetLiabilityAave
         trigger:
           type: block
           block:
@@ -59,7 +59,7 @@ actions:
 
       monitor-protocol-interactions:
         description: Monitors interactions with the Sparklend protocol that involve funds of amounts at least $1.000.000 worth of assets
-        function: src/index:getProtocolInteractionSparkLend
+        function: src/getProtocolInteractionSparkLend:getProtocolInteractionSparkLend
         trigger:
           type: alert
           alert: {}

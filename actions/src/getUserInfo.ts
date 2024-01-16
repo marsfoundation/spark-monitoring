@@ -1,5 +1,4 @@
 import {
-	ActionFn,
 	Context,
 	Event,
 	TransactionEvent,
