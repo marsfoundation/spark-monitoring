@@ -23,10 +23,17 @@ const SPARKLEND_HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B"
 const AAVE_ORACLE = "0x54586bE62E3c3580375aE3723C145253060Ca0C2"
 const AAVE_HEALTH_CHECKER = "0xB75927FbB797d4f568FF782d2B21911015dd52f3"
 
-const getAllReservesAssetLiability = (oracleAddress: string, healthCheckerAddress: string, slackWebhookUrl: string) => async (context: Context, event: Event) => {
+const getAllReservesAssetLiability = (
+	oracleAddress: string,
+	healthCheckerAddress: string,
+	slackWebhookUrl: string,
+	maxDiff: number,
+	usePagerDuty: boolean,
+) => async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent
 
 	const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
+	const GHO = "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f"
 
 	const url = await context.secrets.get('ETH_RPC_URL')
 
@@ -35,16 +42,21 @@ const getAllReservesAssetLiability = (oracleAddress: string, healthCheckerAddres
 	const healthChecker = new ethers.Contract(healthCheckerAddress, sparklendHealthCheckerAbi, provider)
 	const oracle = new ethers.Contract(oracleAddress, oracleAbi, provider)
 
-	const getAllReservesAssetLiabilityResponse = await healthChecker.getAllReservesAssetLiability()
+	const getAllReservesAssetLiabilityResponse = (await healthChecker.getAllReservesAssetLiability())
+		.map((reserveInfo: any) => ({reserve: reserveInfo.reserve, assets: reserveInfo.assets, liabilities: reserveInfo.liabilities}))
 
 	let messages = []
 
 	for (const reserveInfo of getAllReservesAssetLiabilityResponse) {
+		if (reserveInfo.reserve.toLowerCase() === GHO.toLowerCase()) {
+			continue  // We want to completely ignore GHO
+		}
+
 		const diff = BigInt(reserveInfo.assets) - BigInt(reserveInfo.liabilities)
 		const price = await oracle.getAssetPrice(reserveInfo.reserve)
 		const usdDiff = diff * BigInt(price) / BigInt(10 ** 18)
 
-		let MAX_DIFF = 1_000 * 10 ** 8  // 1k USD diff to trigger alert
+		let MAX_DIFF = maxDiff * 10 ** 8  // 1k USD diff to trigger alert
 
 		if (reserveInfo.reserve.toLowerCase() === DAI.toLowerCase()) {
 			MAX_DIFF = 300_000 * 10 ** 8
@@ -62,12 +74,12 @@ const getAllReservesAssetLiability = (oracleAddress: string, healthCheckerAddres
 
 	await sendMessagesToSlack(messages, context, slackWebhookUrl)
 
-	await sendMessagesToPagerDuty(messages, context)
+	if (usePagerDuty) {
+		await sendMessagesToPagerDuty(messages, context)
+	}
 }
 
 const formatAssetLiabilityAlertMessage = async (reserveInfo: any, txEvent: any, provider: any) => {
-	console.log({reserveInfo})
-	console.log({reserve: reserveInfo.reserve})
 
 	const tokenAbi = ["function symbol() view returns (string)"]
 
@@ -114,11 +126,15 @@ NOTE: USD diff derived from raw values, not from USD assets/liabilities.
 export const getAllReservesAssetLiabilitySparkLend = getAllReservesAssetLiability(
 	SPARKLEND_ORACLE,
 	SPARKLEND_HEALTH_CHECKER,
-	'SLACK_WEBHOOK_URL'
+	'SLACK_WEBHOOK_URL',
+	1_000,
+	true,
 )
 
 export const getAllReservesAssetLiabilityAave = getAllReservesAssetLiability(
 	AAVE_ORACLE,
 	AAVE_HEALTH_CHECKER,
-	'AAVE_ALERTS_SLACK_WEBHOOK_URL'
+	'AAVE_ALERTS_SLACK_WEBHOOK_URL',
+	10_000,
+	false,
 )
