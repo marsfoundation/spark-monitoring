@@ -70,3 +70,13 @@ actions:
         trigger:
           type: alert
           alert: {}
+
+      monitor-oracle-price-deviance:
+        description: Checks if Spark oracle is not returning prices far different than an off-chain source.
+        function: src/getAssetPriceDeviance:getAssetPriceDeviance
+        trigger:
+          type: block
+          block:
+            network:
+              - 1
+            blocks: 10
