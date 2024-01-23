@@ -4,13 +4,16 @@ import {
 	Event,
 } from '@tenderly/actions'
 
+import axios from 'axios'
+
 import {
 	Contract,
 } from 'ethers'
 
 import {
-	oracleAbi,
-	poolAbi,
+    erc20Abi,
+    oracleAbi,
+    poolAbi,
 } from './abis'
 
 import {
@@ -30,6 +33,30 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, _: Event
 
     const oraclePrices = await Promise.all(sparkAssets.map(async asset => await oracle.getAssetPrice(asset)))
 
-    console.log(sparkAssets)
-    console.log(oraclePrices)
+    const sparkAssetSymbols = (await Promise.all(sparkAssets.map(async asset => await new Contract(asset, erc20Abi, provider).symbol())))
+        .map(symbol => symbol.toUpperCase())
+
+    const coinmarketcapApiKey = await context.secrets.get('COINMARKETCAP_API_KEY')
+    const coinmarketcapCallResult = await axios.get(`https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?symbol=${sparkAssetSymbols.join(',')}`, {
+        headers: {
+            'X-CMC_PRO_API_KEY': coinmarketcapApiKey,
+        },
+    })
+
+    // const coinmarketcapPrices = sparkAssetSymbols.map(symbol => coinmarketcapCallResult.data.data[symbol])
+
+
+    const offChainPrices = sparkAssetSymbols.map(symbol => BigInt(Math.floor(coinmarketcapCallResult.data.data[symbol][0].quote.USD.price * 1_00000000)))
+
+    oraclePrices.forEach((oraclePrice, index) => {
+        if(oraclePrice == offChainPrices[index]) {
+            console.log(`Prices of ${sparkAssetSymbols[index]} are equal (${oraclePrice.toString()})`)
+        }
+        if(oraclePrice > offChainPrices[index]) {
+            console.log(`Oracle price of ${sparkAssetSymbols[index]} is higher (${oraclePrice.toString()} (off-chain: ${offChainPrices[index].toString()}))`)
+        }
+        if(oraclePrice < offChainPrices[index]) {
+            console.log(`Off-chain price of ${sparkAssetSymbols[index]} is higher (${offChainPrices[index].toString()}) (oracle: ${oraclePrice.toString()})`)
+        }
+    })
 }
