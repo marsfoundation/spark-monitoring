@@ -43,9 +43,6 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, _: Event
         },
     })
 
-    // const coinmarketcapPrices = sparkAssetSymbols.map(symbol => coinmarketcapCallResult.data.data[symbol])
-
-
     const offChainPrices = sparkAssetSymbols.map(symbol => BigInt(Math.floor(coinmarketcapCallResult.data.data[symbol][0].quote.USD.price * 1_00000000)))
 
     oraclePrices.forEach((oraclePrice, index) => {
