@@ -12,6 +12,7 @@ import {
 } from './abis'
 
 import {
+	createEtherscanTxLink,
 	formatBigInt,
 	sendMessagesToSlack,
 } from './utils'
@@ -167,6 +168,5 @@ ${txEvent.from}
 COLLATERAL ($${formatBigInt(totalCollateralValue/BigInt(10 ** 7), 1)}M):${collateralPositions.join('')}
 DEBT ($${formatBigInt(totalDebtValue/BigInt(10 ** 7), 1)}M):${debtPositions.join('')}
 
-Transaction hash: ${txEvent.hash}
-(https://etherscan.io/tx/${txEvent.hash})\`\`\``
+${createEtherscanTxLink(txEvent.hash)}\`\`\``
 }

@@ -18,6 +18,7 @@ import {
 } from './abis'
 
 import {
+	createEtherscanTxLink,
 	formatBigInt,
 	sendMessagesToSlack,
 } from './utils'
@@ -78,7 +79,7 @@ export const getConfigurationChangeAave: ActionFn = async (context: Context, eve
 		.filter(log => log && reconfigurationEventNames.includes(log.name))
 		.filter(log => log && (sparkAssets.includes(log.args.asset) || log.args.asset == undefined))
 		.map(log => log && formatConfigChangeMessage(log, symbols))
-		.map(message => `\`\`\`${message}\n(https://etherscan.io/tx/${transactionEvent.hash})\`\`\``)
+		.map(message => `\`\`\`${message}\n${createEtherscanTxLink(transactionEvent.hash)}\`\`\``)
 
 	console.log(reconfigurationEventMessages)
 

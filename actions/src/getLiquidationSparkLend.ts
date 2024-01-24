@@ -16,6 +16,7 @@ import {
 
 import {
     createMainnetProvider,
+    createPositionOutlineForUser,
     fetchAllAssetsData,
 } from './utils'
 
@@ -35,12 +36,11 @@ export const getLiquidationSparkLend: ActionFn = async (context: Context, event:
         .map(log => pool.interface.parseLog(log))
         .filter(log => log?.name == 'LiquidationCall')
 
-    liquidationLogs.forEach(log => {
-        console.log({log})
-    })
-
-    if (liquidationLogs[0]) {
-        console.log(await fetchAllAssetsData(liquidationLogs[0].args[5], pool, oracle, provider))
-    }
+    await Promise.all(
+        liquidationLogs.map(async (log) => {
+            const allAssetData = await fetchAllAssetsData(log && log.args[5], pool, oracle, provider)
+            console.log(createPositionOutlineForUser(allAssetData))
+        })
+    )
 
 }
