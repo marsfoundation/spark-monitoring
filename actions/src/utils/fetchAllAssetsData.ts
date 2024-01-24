@@ -7,23 +7,9 @@ import {
     erc20Abi,
 } from '../abis'
 
-type AssetsData = {
-    [key: string]: {
-        price: BigInt,
-        decimals: BigInt,
-        symbol: string
-        totalSupply: BigInt,
-        usersCollateral: {
-            balance: BigInt,
-            value: BigInt,
-        },
-        totalDebt: BigInt,
-        usersDebt: {
-            balance: BigInt,
-            value: BigInt,
-        },
-    }
-}
+import {
+	AssetsData,
+} from './types'
 
 export const fetchAllAssetsData = async (user: string, pool: Contract, oracle: Contract, provider: JsonRpcProvider): Promise<AssetsData> => {
     const assets = await pool.getReservesList() as any[]
@@ -37,7 +23,7 @@ export const fetchAllAssetsData = async (user: string, pool: Contract, oracle: C
 	const totalDebt = await Promise.all(assets.map(async (_ ,index) => BigInt(await new Contract(reserveDataSets[index][10], erc20Abi, provider).totalSupply())))
 	const debtPositions = await Promise.all(assets.map(async (_ ,index) => BigInt(await new Contract(reserveDataSets[index][10], erc20Abi, provider).balanceOf(user))))
 
-	return assets.reduce((assetData, asset, index) => (
+	return {...assets.reduce((assetData, asset, index) => (
 		assetData[asset] = {
 			price: prices[index],
 			decimals: decimals[index],
@@ -59,5 +45,5 @@ export const fetchAllAssetsData = async (user: string, pool: Contract, oracle: C
 					/ BigInt(10 ** 6) // dividing by 10 ** 6, not 10 ** 8 because we want the result in USD cents
 			},
 		}, assetData
-	), {})
+	), {}), user}
 }
