@@ -1,11 +1,14 @@
 import {
     formatBigInt
-} from "../formatBigInt"
-import { omitKey } from "../omitKey"
+} from './formatBigInt'
+
+import {
+	omitKey
+} from '../omitKey'
 
 import {
     AssetsData,
-} from "../types"
+} from '../types'
 
 export const createPositionOutlineForUser = (assetsData: AssetsData): string => {
 	const collateralPositions = Object.keys(omitKey(assetsData, 'user')).map(asset => ({
