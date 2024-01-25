@@ -41,14 +41,8 @@ actions:
         description: Monitors liquidations in SparkLend protocol
         function: src/getLiquidationSparkLend:getLiquidationSparkLend
         trigger:
-          type: transaction
-          transaction:
-            status:
-              - mined
-            filters:
-              - network: 1
-                status: success
-                to: 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2
+          type: alert
+          alert: {}
 
       monitor-asset-liabilities:
         description: Checks asset liability matching for each reserve.

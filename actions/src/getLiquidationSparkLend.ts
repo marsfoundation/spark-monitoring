@@ -6,7 +6,8 @@ import {
 } from '@tenderly/actions'
 
 import {
-    Contract
+    Contract,
+    LogDescription,
 } from 'ethers'
 
 import {
@@ -15,9 +16,15 @@ import {
 } from './abis'
 
 import {
+    AssetsData,
+    createEtherscanTxLink,
     createMainnetProvider,
+    createPoolStateOutline,
     createPositionOutlineForUser,
     fetchAllAssetsData,
+    formatAssetAmount,
+    sendMessagesToSlack,
+    shortenAddress,
 } from './utils'
 
 const SPARKLEND_POOL = '0xC13e21B648A5Ee794902342038FF3aDAB66BE987'
@@ -36,11 +43,27 @@ export const getLiquidationSparkLend: ActionFn = async (context: Context, event:
         .map(log => pool.interface.parseLog(log))
         .filter(log => log?.name == 'LiquidationCall')
 
-    await Promise.all(
+    const slackMessages = await Promise.all(
         liquidationLogs.map(async (log) => {
-            const allAssetData = await fetchAllAssetsData(log && log.args[5], pool, oracle, provider)
-            console.log(createPositionOutlineForUser(allAssetData))
+            const allAssetsData = await fetchAllAssetsData(log && log.args[2], pool, oracle, provider)
+            return log && formatLiquidationMessage(allAssetsData, log, txEvent.hash)
         })
-    )
+    ) as string[]
 
+    await sendMessagesToSlack(slackMessages, context, 'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL')
+
+}
+
+const formatLiquidationMessage = (allAssetsData: AssetsData, log: LogDescription, txHash: string) => {
+    console.log(log.args)
+    return `\`\`\`
+LIQUIDATED:   ${formatAssetAmount(allAssetsData, log.args[0], log.args[4])}
+DEBT COVERED: ${formatAssetAmount(allAssetsData, log.args[1], log.args[3])}
+USER:         ${shortenAddress(log.args[2])}
+LIQUIDATOR:   ${shortenAddress(log.args[5])}
+POOL:         ${createPoolStateOutline(allAssetsData[log.args[0]])}
+
+${createPositionOutlineForUser(allAssetsData)}
+
+${createEtherscanTxLink(txHash)}\`\`\``
 }
