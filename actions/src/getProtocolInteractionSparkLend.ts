@@ -161,8 +161,8 @@ const formatProtocolInteractionAlertMessage = (
 	return `
 		\`\`\`
 ${log.name.toUpperCase()}: ${formatBigInt(BigInt(log.args.amount)/BigInt( BigInt(10) ** BigInt(assetData[log.args.reserve].decimals)), 0)} ${assetData[log.args.reserve].symbol} ($${formatBigInt(transactionValue/BigInt(10 ** 7), 1)}M)
-USER:   ${txEvent.from.slice(0, 7)}...${txEvent.from.slice(36, 41)}
-POOL:   $${totalSupplyValue/BigInt(10 ** 8)}M (util. ${poolUtilization}%)
+USER:${' '.repeat(log.name.length - 3)}${txEvent.from.slice(0, 7)}...${txEvent.from.slice(36, 41)}
+POOL:${' '.repeat(log.name.length - 3)}$${totalSupplyValue/BigInt(10 ** 8)}M (util. ${poolUtilization}%)
 
 ${txEvent.from}
 COLLATERAL ($${formatBigInt(totalCollateralValue/BigInt(10 ** 7), 1)}M):${collateralPositions.join('')}
