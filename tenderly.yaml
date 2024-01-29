@@ -86,4 +86,4 @@ actions:
           block:
             network:
               - 1
-            blocks: 500
+            blocks: 5
