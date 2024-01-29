@@ -12,7 +12,7 @@ import {
 import {
 	formatBigInt,
 	sendMessagesToPagerDuty,
-    sendMessagesToSlack,
+	sendMessagesToSlack,
 } from './utils'
 
 const ethers = require('ethers')

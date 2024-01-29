@@ -15,7 +15,7 @@ export type AssetData = {
 }
 
 export type AssetsData = {
-    [K in keyof any as Exclude<K, 'user'>]: AssetData
+	[K in keyof any as Exclude<K, 'user'>]: AssetData
 } & {
-    user: string;
+	user: string;
 }

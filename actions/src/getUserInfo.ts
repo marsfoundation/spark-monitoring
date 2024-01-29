@@ -10,9 +10,9 @@ import {
 } from './abis'
 
 import {
-    formatBigInt,
+	formatBigInt,
 	sendMessagesToPagerDuty,
-    sendMessagesToSlack,
+	sendMessagesToSlack,
 } from './utils'
 
 const ethers = require('ethers')

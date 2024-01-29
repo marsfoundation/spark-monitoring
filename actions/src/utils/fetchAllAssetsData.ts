@@ -1,10 +1,10 @@
 import {
-    Contract,
-    JsonRpcProvider,
+	Contract,
+	JsonRpcProvider,
 } from 'ethers'
 
 import {
-    erc20Abi,
+	erc20Abi,
 } from '../abis'
 
 import {
@@ -12,7 +12,7 @@ import {
 } from './types'
 
 export const fetchAllAssetsData = async (user: string, pool: Contract, oracle: Contract, provider: JsonRpcProvider): Promise<AssetsData> => {
-    const assets = await pool.getReservesList() as any[]
+	const assets = await pool.getReservesList() as any[]
 
 	const prices = await Promise.all(assets.map(async asset => BigInt(await oracle.getAssetPrice(asset))))
 	const decimals = await Promise.all(assets.map(async asset => BigInt(await new Contract(asset, erc20Abi, provider).decimals())))

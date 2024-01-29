@@ -1,5 +1,5 @@
 import {
-    formatBigInt
+	formatBigInt
 } from './formatBigInt'
 
 import {
@@ -7,7 +7,7 @@ import {
 } from '../omitKey'
 
 import {
-    AssetsData,
+	AssetsData,
 } from '../types'
 
 export const createPositionOutlineForUser = (assetsData: AssetsData): string => {
@@ -39,7 +39,7 @@ export const createPositionOutlineForUser = (assetsData: AssetsData): string => 
 		.map(asset => assetsData[asset].usersDebt.value)
 		.reduce((debt, totalDebt) => totalDebt += debt, BigInt(0))
 
-    return `${assetsData.user}
+	return `${assetsData.user}
 COLLATERAL ($${formatBigInt(totalCollateralValue/BigInt(10 ** 7), 1)}M):${collateralPositions.join('')}
 DEBT ($${formatBigInt(totalDebtValue/BigInt(10 ** 7), 1)}M):${debtPositions.join('')}`
 }
