@@ -87,7 +87,7 @@ export const getConfigurationChangeAave: ActionFn = async (context: Context, eve
 }
 
 const formatConfigChangeMessage = (log: LogDescription, symbols: Record<string, string>) => {
-	return`${log.name}${Object.keys(log.args).map((_, index) => (formatArgOutput(log, index, symbols))).join('')}`
+	return`👻 ${log.name}${Object.keys(log.args).map((_, index) => (formatArgOutput(log, index, symbols))).join('')}`
 }
 
 const formatArgOutput = (log: LogDescription, argIndex: number, symbols: Record<string, string>) => {
