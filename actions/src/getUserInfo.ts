@@ -125,9 +125,7 @@ Total Collateral: ${formatBigInt(BigInt(userHealth.totalCollateralBase), 8)}
 Total Debt:       ${formatBigInt(BigInt(userHealth.totalDebtBase), 8)}
 LT:               ${formatBigInt(BigInt(userHealth.currentLiquidationThreshold), 2)}%
 LTV:              ${formatBigInt(BigInt(userHealth.ltv), 2)}%
-Health Factor:    ${formatBigInt(BigInt(userHealth.healthFactor), 18)}
-\`\`\`
-	`
+Health Factor:    ${formatBigInt(BigInt(userHealth.healthFactor), 18)}\`\`\``
 }
 
 export const getUserInfoSparkLend = getUserInfo(

@@ -117,10 +117,7 @@ Assets:      ${formatBigInt(BigInt(usdAssets), 8)}
 Liabilities: ${formatBigInt(BigInt(usdLiabilities), 8)}
 Diff:        ${formatBigInt(BigInt(reserveInfo.usdDiff), 8)}
 
-NOTE: USD diff derived from raw values, not from USD assets/liabilities.
-
-\`\`\`
-	`
+NOTE: USD diff derived from raw values, not from USD assets/liabilities.\`\`\``
 }
 
 export const getAllReservesAssetLiabilitySparkLend = getAllReservesAssetLiability(
