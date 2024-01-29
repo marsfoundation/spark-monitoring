@@ -1,3 +1,4 @@
+export * from './calculateDollarValueInCents'
 export * from './createMainnetProvider'
 export * from './fetchAllAssetsData'
 export * from './getDevianceInBasisPoints'
@@ -5,6 +6,7 @@ export * from './invertRecord'
 export * from './omitKey'
 export * from './sendMessagesToPagerDuty'
 export * from './sendMessagesToSlack'
+export * from './transactionAlreadyProcessed'
 export * from './types'
 
 export * from './messages/createEtherscanTxLink'
