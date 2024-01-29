@@ -2,7 +2,7 @@ import axios from 'axios'
 
 import {
 	ActionFn,
-    BlockEvent,
+	BlockEvent,
 	Context,
 	Event,
 } from '@tenderly/actions'
@@ -18,10 +18,11 @@ import {
 } from './abis'
 
 import {
-    createMainnetProvider, invertRecord,
-    getDevianceInBasisPoints,
-    sendMessagesToSlack,
+    createMainnetProvider,
     formatBigInt,
+    getDevianceInBasisPoints,
+    invertRecord,
+    sendMessagesToSlack,
 } from './utils'
 
 const SPARKLEND_POOL = '0xC13e21B648A5Ee794902342038FF3aDAB66BE987' as const
@@ -39,7 +40,6 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 
     const oraclePrices = (await Promise.all(sparkAssets.map(async (asset, index) => {return {[`${sparkAssetSymbols[index]}`]: await oracle.getAssetPrice(asset)}})))
         .reduce((acc, curr) => { return { ...acc, ...curr }}, {})
-    console.log({oraclePrices})
 
     // const coinmarketcapApiKey = await context.secrets.get('COINMARKETCAP_API_KEY')
     // const coinmarketcapCallResult = await axios.get(`https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?symbol=${sparkAssetSymbols.join(',')}`, {
@@ -48,7 +48,6 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
     //     },
     // })
     // const coinmarketcapPrices = sparkAssetSymbols.map(symbol => BigInt(Math.floor(coinmarketcapCallResult.data.data[symbol][0].quote.USD.price * 1_00000000)))
-    // console.log({coinmarketcapPrices})
 
     const coingeckoCoinIds: Record<string, string> = {
         'GNO': 'gnosis',
@@ -65,7 +64,6 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
     const coingeckoPrices = Object.keys(coingeckoCallResult.data)
         .map(key => {return {[invertRecord(coingeckoCoinIds)[key]]: BigInt(Math.floor(coingeckoCallResult.data[key].usd * 1_00000000))}})
         .reduce((acc, curr) => { return { ...acc, ...curr }}, {})
-    console.log({coingeckoPrices})
 
     const offChainPrices = coingeckoPrices
 
@@ -82,7 +80,8 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
             console.log(`Prices of ${assetSymbol} are equal (${oraclePrices[assetSymbol].toString()})`)
         }
 
-        if (devianceInBasisPoints >= 10) {  // modify this to test alerts triggers
+        const devianceThreshold = assetSymbol == 'GNO' ? 500 : 150  // modify this to test alerts triggers
+        if (devianceInBasisPoints >= devianceThreshold) {
             slackMessages.push(
                 formatHighDevianceMessage(
                     assetSymbol,
@@ -96,7 +95,7 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
         }
     })
     console.log(slackMessages)
-    await sendMessagesToSlack(slackMessages, context, 'SLACK_WEBHOOK_URL')
+    await sendMessagesToSlack(slackMessages, context, 'ALERTS_IMPORTANT_SLACK_WEBHOOK_URL')
 }
 
 const formatHighDevianceMessage = (
