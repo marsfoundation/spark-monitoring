@@ -33,6 +33,14 @@ const SPARKLEND_ORACLE = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
 export const getLiquidationSparkLend: ActionFn = async (context: Context, event: Event) => {
 	const txEvent = event as TransactionEvent
 
+	if (await context.storage.getNumber(`getLiquidationSparkLend-${txEvent.hash}`) == 1) {
+		console.log(`Transaction ${txEvent.hash} was already processed`)
+		return
+	} else {
+		await context.storage.putNumber(`getLiquidationSparkLend-${txEvent.hash}`, 1);
+		console.log(`Transaction ${txEvent.hash} is being saved as processed`)
+	}
+
 	const provider = await createMainnetProvider(context)
 
 	const pool = new Contract(SPARKLEND_POOL, poolAbi, provider)

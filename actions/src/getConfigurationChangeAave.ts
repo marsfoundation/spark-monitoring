@@ -52,11 +52,11 @@ const AAVE_POOL_CONFIGURATOR_ADDRESS = "0x64b761D848206f447Fe2dd461b0c635Ec39EbB
 export const getConfigurationChangeAave: ActionFn = async (context: Context, event: Event) => {
 	const transactionEvent = event as TransactionEvent
 
-	if (await context.storage.getNumber(transactionEvent.hash) == 1) {
+	if (await context.storage.getNumber(`getConfigurationChangeAave-${transactionEvent.hash}`) == 1) {
 		console.log(`Transaction ${transactionEvent.hash} was already processed`)
 		return
 	} else {
-		await context.storage.putNumber(transactionEvent.hash, 1);
+		await context.storage.putNumber(`getConfigurationChangeAave-${transactionEvent.hash}`, 1);
 		console.log(`Transaction ${transactionEvent.hash} is being saved as processed`)
 	}
 
