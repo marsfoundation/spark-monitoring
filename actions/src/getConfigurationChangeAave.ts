@@ -21,6 +21,7 @@ import {
 	createEtherscanTxLink,
 	formatBigInt,
 	sendMessagesToSlack,
+	transactionAlreadyProcessed,
 } from './utils'
 
 const reconfigurationEventNames = [
@@ -52,13 +53,7 @@ const AAVE_POOL_CONFIGURATOR_ADDRESS = "0x64b761D848206f447Fe2dd461b0c635Ec39EbB
 export const getConfigurationChangeAave: ActionFn = async (context: Context, event: Event) => {
 	const transactionEvent = event as TransactionEvent
 
-	if (await context.storage.getNumber(`getConfigurationChangeAave-${transactionEvent.hash}`) == 1) {
-		console.log(`Transaction ${transactionEvent.hash} was already processed`)
-		return
-	} else {
-		await context.storage.putNumber(`getConfigurationChangeAave-${transactionEvent.hash}`, 1);
-		console.log(`Transaction ${transactionEvent.hash} is being saved as processed`)
-	}
+	if (await transactionAlreadyProcessed('getConfigurationChangeAave', context, transactionEvent)) return
 
 	const rpcUrl = await context.secrets.get('ETH_RPC_URL')
 	const provider = new JsonRpcProvider(rpcUrl)

@@ -15,6 +15,7 @@ import {
 	createEtherscanTxLink,
 	formatBigInt,
 	sendMessagesToSlack,
+	transactionAlreadyProcessed,
 } from './utils'
 
 const ethers = require('ethers')
@@ -25,13 +26,7 @@ const ORACLE_ADDRESS = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
 export const getProtocolInteractionSparkLend: ActionFn = async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent
 
-	if (await context.storage.getNumber(`getProtocolInteractionSparklend-${txEvent.hash}`) == 1) {
-		console.log(`Transaction ${txEvent.hash} was already processed`)
-		return
-	} else {
-		await context.storage.putNumber(`getProtocolInteractionSparklend-${txEvent.hash}`, 1);
-		console.log(`Transaction ${txEvent.hash} is being saved as processed`)
-	}
+	if (await transactionAlreadyProcessed('getProtocolInteractionSparklend', context, txEvent)) return
 
 	const rpcUrl = await context.secrets.get('ETH_RPC_URL')
 	const provider = new ethers.JsonRpcProvider(rpcUrl)

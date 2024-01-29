@@ -71,6 +71,19 @@ actions:
           type: alert
           alert: {}
 
+      monitor-protocol-interactions-test:
+        description: TEST Monitors interactions with the Sparklend protocol that involve funds of amounts at least $1.000.000 worth of assets
+        function: src/getProtocolInteractionSparkLendTest:getProtocolInteractionSparkLendTest
+        trigger:
+          type: transaction
+          transaction:
+            status:
+              - mined
+            filters:
+              - network: 1
+                status: success
+                to: 0xC13e21B648A5Ee794902342038FF3aDAB66BE987
+
       monitor-aave-config-changes:
         description: Reports changes to the Aave V3 protocol
         function: src/getConfigurationChangeAave:getConfigurationChangeAave

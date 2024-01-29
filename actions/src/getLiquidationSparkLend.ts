@@ -25,7 +25,9 @@ import {
 	formatAssetAmount,
 	sendMessagesToSlack,
 	shortenAddress,
+	transactionAlreadyProcessed,
 } from './utils'
+
 
 const SPARKLEND_POOL = '0xC13e21B648A5Ee794902342038FF3aDAB66BE987'
 const SPARKLEND_ORACLE = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
@@ -33,13 +35,7 @@ const SPARKLEND_ORACLE = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
 export const getLiquidationSparkLend: ActionFn = async (context: Context, event: Event) => {
 	const txEvent = event as TransactionEvent
 
-	if (await context.storage.getNumber(`getLiquidationSparkLend-${txEvent.hash}`) == 1) {
-		console.log(`Transaction ${txEvent.hash} was already processed`)
-		return
-	} else {
-		await context.storage.putNumber(`getLiquidationSparkLend-${txEvent.hash}`, 1);
-		console.log(`Transaction ${txEvent.hash} is being saved as processed`)
-	}
+	if (await transactionAlreadyProcessed('getLiquidationSparkLend', context, txEvent)) return
 
 	const provider = await createMainnetProvider(context)
 
