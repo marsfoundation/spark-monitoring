@@ -107,7 +107,7 @@ const formatHighDevianceMessage = (
 ): string => {
 	return `
 \`\`\`
-🚨 ${assetSymbol} ORACLE DEVIANCE 🚨
+🚨🔮 ${assetSymbol} ORACLE DEVIANCE 🚨🔮
 Off-Chain:    ${formatBigInt(offChainPrice, 8)}
 Oracle:       ${formatBigInt(oraclePrice, 8)}
 Deviance:     ${Number(devianceInBasisPoints)/100}% (${devianceInBasisPoints} bps)
