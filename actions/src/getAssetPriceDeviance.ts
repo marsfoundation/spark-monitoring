@@ -80,7 +80,7 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 			console.log(`Prices of ${assetSymbol} are equal (${oraclePrices[assetSymbol].toString()})`)
 		}
 
-		const devianceThreshold = assetSymbol == 'GNO' ? 500 : 150  // modify this to test alerts triggers
+		const devianceThreshold = assetSymbol == 'GNO' ? 1000 : 500  // modify this to test alerts triggers
 		if (devianceInBasisPoints >= devianceThreshold) {
 			slackMessages.push(
 				formatHighDevianceMessage(
