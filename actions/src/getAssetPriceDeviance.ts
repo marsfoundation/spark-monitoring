@@ -68,7 +68,7 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 	const offChainPrices = coingeckoPrices
 
 	let slackMessages = [] as string[]
-	sparkAssetSymbols.forEach(assetSymbol => {
+	for(const assetSymbol of sparkAssetSymbols){
 		const devianceInBasisPoints = getDevianceInBasisPoints(oraclePrices[assetSymbol], offChainPrices[assetSymbol])
 
 		const deviancePercentage = Number(devianceInBasisPoints)/100
@@ -80,8 +80,15 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 			console.log(`Prices of ${assetSymbol} are equal (${oraclePrices[assetSymbol].toString()})`)
 		}
 
-		const devianceThreshold = assetSymbol == 'GNO' ? 1000 : 500  // modify this to test alerts triggers
-		if (devianceInBasisPoints >= devianceThreshold) {
+		const blockOfLastAlertForAsset = await context.storage.getNumber(`getAssetPriceDeviance-${assetSymbol}`)
+		const cooldownPeriod = 500
+		const devianceThreshold = assetSymbol == 'GNO' ? 1500 : 750  // modify this to test alerts triggers
+
+		if (
+			devianceInBasisPoints >= devianceThreshold
+			&& blockEvent.blockNumber >= cooldownPeriod + blockOfLastAlertForAsset
+		) {
+			await context.storage.putNumber(`getAssetPriceDeviance-${assetSymbol}`, blockEvent.blockNumber)
 			slackMessages.push(
 				formatHighDevianceMessage(
 					assetSymbol,
@@ -93,7 +100,7 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 			)
 
 		}
-	})
+	}
 	console.log(slackMessages)
 	await sendMessagesToSlack(slackMessages, context, 'ALERTS_IMPORTANT_SLACK_WEBHOOK_URL')
 }

@@ -8,7 +8,7 @@ export const transactionAlreadyProcessed = async (actionName: string, context: C
         console.log(`Transaction ${txEvent.hash} was already processed by action ${actionName}`)
         return true
     }
-    await context.storage.putNumber(`${actionName}-${txEvent.hash}`, 1);
+    await context.storage.putNumber(`${actionName}-${txEvent.hash}`, 1)
     console.log(`Transaction ${txEvent.hash} is being saved as processed by action ${actionName}`)
     return false
 }
