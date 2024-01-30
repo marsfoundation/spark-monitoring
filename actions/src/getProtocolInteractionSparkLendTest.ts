@@ -23,6 +23,7 @@ import {
 	createPositionOutlineForUser,
 	fetchAllAssetsData,
 	formatAssetAmount,
+	getUsersFromParsedLogs,
 	sendMessagesToSlack,
 	shortenAddress,
 	transactionAlreadyProcessed,
@@ -47,11 +48,14 @@ export const getProtocolInteractionSparkLendTest: ActionFn = async (context: Con
 		.map(log => pool.interface.parseLog(log))
 		.filter(log => log?.name == 'Supply' || log?.name == 'Borrow' || log?.name == 'Withdraw' || log?.name == 'Repay')
 
-	const allAssetsData = await fetchAllAssetsData(txEvent.from, pool, oracle, provider)
+	const users = getUsersFromParsedLogs(preFilteredLogs as LogDescription[])
+
+	const allAssetsDataForAllUsers: Record<string, AssetsData> = (await Promise.all(users.map(user => fetchAllAssetsData(user, pool, oracle, provider))))
+		.reduce((acc, curr, index) => {return {...acc, [users[index]]: curr}}, {})
 
 	const slackMessages = preFilteredLogs
-		.filter(log => log && calculateDollarValueInCents(allAssetsData, log.args.amount, log.args.reserve) > BigInt(100000000)) // value bigger than $1.000.000 in cents
-		.map(log => log && formatProtocolInteractionAlertMessage(log, txEvent, allAssetsData)) as string[]
+		.filter(log => log && calculateDollarValueInCents(allAssetsDataForAllUsers[log.args.user], log.args.amount, log.args.reserve) > BigInt(100000000)) // value bigger than $1.000.000 in cents
+		.map(log => log && formatProtocolInteractionAlertMessage(log, txEvent, allAssetsDataForAllUsers[log.args.user])) as string[]
 
 	await sendMessagesToSlack(slackMessages, context, 'TEST_SLACK_WEBHOOK_URL')
 }
@@ -63,7 +67,7 @@ const formatProtocolInteractionAlertMessage = (
 ) => {
 	return `\`\`\`
 ${log.name.toUpperCase()}: ${formatAssetAmount(allAssetsData, log.args.reserve, log.args.amount)}
-USER:${' '.repeat(log.name.length - 3)}${shortenAddress(txEvent.from)}
+USER:${' '.repeat(log.name.length - 3)}${shortenAddress(log.args.user)}
 POOL:${' '.repeat(log.name.length - 3)}${createPoolStateOutline(allAssetsData[log.args.reserve])}
 
 ${createPositionOutlineForUser(allAssetsData)}
