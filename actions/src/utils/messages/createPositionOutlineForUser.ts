@@ -40,6 +40,6 @@ export const createPositionOutlineForUser = (assetsData: AssetsData): string => 
 		.reduce((debt, totalDebt) => totalDebt += debt, BigInt(0))
 
 	return `${assetsData.user}
-COLLATERAL ($${formatBigInt(totalCollateralValue/BigInt(10 ** 7), 1)}M):${collateralPositions.join('')}
-DEBT ($${formatBigInt(totalDebtValue/BigInt(10 ** 7), 1)}M):${debtPositions.join('')}`
+💰 COLLATERAL ($${formatBigInt(totalCollateralValue/BigInt(10 ** 7), 1)}M):${collateralPositions.join('')}
+📝 DEBT ($${formatBigInt(totalDebtValue/BigInt(10 ** 7), 1)}M):${debtPositions.join('')}`
 }

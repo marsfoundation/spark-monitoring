@@ -6,7 +6,8 @@ import {
 } from '@tenderly/actions'
 
 import {
-	Contract, LogDescription,
+	Contract,
+	LogDescription,
 } from 'ethers'
 
 import {
@@ -28,7 +29,6 @@ import {
 	shortenAddress,
 	transactionAlreadyProcessed,
 } from './utils'
-
 
 const POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987"
 const ORACLE_ADDRESS = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
@@ -65,12 +65,21 @@ const formatProtocolInteractionAlertMessage = (
 	txEvent: TransactionEvent,
 	allAssetsData: AssetsData,
 ) => {
+	const title = formatInteractionName(log.name)
 	return `\`\`\`
-${log.name.toUpperCase()}: ${formatAssetAmount(allAssetsData, log.args.reserve, log.args.amount)}
-USER:${' '.repeat(log.name.length - 3)}${shortenAddress(log.args.user)}
-POOL:${' '.repeat(log.name.length - 3)}${createPoolStateOutline(allAssetsData[log.args.reserve])}
+${title}: ${formatAssetAmount(allAssetsData, log.args.reserve, log.args.amount)}
+👨‍💼 USER:${' '.repeat(title.length - 5)}${shortenAddress(log.args.user)}
+🏦 POOL:${' '.repeat(title.length - 5)}${createPoolStateOutline(allAssetsData[log.args.reserve])}
 
 ${createPositionOutlineForUser(allAssetsData)}
 
 ${createEtherscanTxLink(txEvent.hash)}\`\`\``
+}
+
+const formatInteractionName = (name: string) => {
+	if(name == 'Supply') return '💰 SUPPLY'
+	if(name == 'Withdraw') return '💸 WITHDRAW'
+	if(name == 'Borrow') return '📝 BORROW'
+	if(name == 'Repay') return '🤑 REPAY'
+	return ''
 }
