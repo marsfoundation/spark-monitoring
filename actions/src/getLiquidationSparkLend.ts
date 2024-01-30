@@ -61,8 +61,8 @@ export const getLiquidationSparkLend: ActionFn = async (context: Context, event:
 const formatLiquidationMessage = (allAssetsData: AssetsData, log: LogDescription, txHash: string) => {
 	console.log(log.args)
 	return `\`\`\`
-❌ LIQUIDATED:   ${formatAssetAmount(allAssetsData, log.args[0], log.args[4])}
-📝 DEBT COVERED: ${formatAssetAmount(allAssetsData, log.args[1], log.args[3])}
+❌ LIQUIDATED:   ${formatAssetAmount(allAssetsData[log.args[0]], log.args[4])}
+📝 DEBT COVERED: ${formatAssetAmount(allAssetsData[log.args[1]], log.args[3])}
 👨‍💼 USER:         ${shortenAddress(log.args[2])}
 🥷 LIQUIDATOR:   ${shortenAddress(log.args[5])}
 🏦 POOL:         ${createPoolStateOutline(allAssetsData[log.args[0]])}

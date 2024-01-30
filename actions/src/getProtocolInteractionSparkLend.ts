@@ -17,13 +17,16 @@ import {
 
 import {
 	AssetsData,
+	aliases,
 	calculateDollarValueInCents,
+	createD3MOutline,
 	createEtherscanTxLink,
 	createMainnetProvider,
 	createPoolStateOutline,
 	createPositionOutlineForUser,
 	fetchAllAssetsData,
 	formatAssetAmount,
+	getAddressAlias,
 	getUsersFromParsedLogs,
 	sendMessagesToSlack,
 	shortenAddress,
@@ -54,7 +57,7 @@ export const getProtocolInteractionSparkLend: ActionFn = async (context: Context
 		.reduce((acc, curr, index) => {return {...acc, [users[index]]: curr}}, {})
 
 	const slackMessages = preFilteredLogs
-		.filter(log => log && calculateDollarValueInCents(allAssetsDataForAllUsers[log.args.user], log.args.amount, log.args.reserve) > BigInt(100000000)) // value bigger than $1.000.000 in cents
+		.filter(log => log && calculateDollarValueInCents(allAssetsDataForAllUsers[log.args.user][log.args.reserve], log.args.amount) > BigInt(100000000)) // value bigger than $1.000.000 in cents
 		.map(log => log && formatProtocolInteractionAlertMessage(log, txEvent, allAssetsDataForAllUsers[log.args.user])) as string[]
 
 	await sendMessagesToSlack(slackMessages, context, 'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL')
@@ -67,11 +70,13 @@ const formatProtocolInteractionAlertMessage = (
 ) => {
 	const title = formatInteractionName(log.name)
 	return `\`\`\`
-${title}: ${formatAssetAmount(allAssetsData, log.args.reserve, log.args.amount)}
-👨‍💼 USER:${' '.repeat(title.length - 6)}${shortenAddress(log.args.user)}
+${title}: ${formatAssetAmount(allAssetsData[log.args.reserve], log.args.amount)}
+👨‍💼 USER:${' '.repeat(title.length - 6)}${getAddressAlias(log.args.user) || shortenAddress(log.args.user)}
 🏦 POOL:${' '.repeat(title.length - 6)}${createPoolStateOutline(allAssetsData[log.args.reserve])}
 
-${createPositionOutlineForUser(allAssetsData)}
+${getAddressAlias(log.args.user) == aliases.MAKER_CORE_D3M && allAssetsData[log.args.reserve].symbol == 'DAI'
+	? createD3MOutline(allAssetsData[log.args.reserve])
+	: createPositionOutlineForUser(allAssetsData)}
 
 ${createEtherscanTxLink(txEvent.hash)}\`\`\``
 }
