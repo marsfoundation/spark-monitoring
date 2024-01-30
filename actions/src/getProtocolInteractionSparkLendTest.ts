@@ -68,8 +68,8 @@ const formatProtocolInteractionAlertMessage = (
 	const title = formatInteractionName(log.name)
 	return `\`\`\`
 ${title}: ${formatAssetAmount(allAssetsData, log.args.reserve, log.args.amount)}
-👨‍💼 USER:${' '.repeat(title.length - 5)}${shortenAddress(log.args.user)}
-🏦 POOL:${' '.repeat(title.length - 5)}${createPoolStateOutline(allAssetsData[log.args.reserve])}
+👨‍💼 USER:${' '.repeat(title.length - 6)}${shortenAddress(log.args.user)}
+🏦 POOL:${' '.repeat(title.length - 6)}${createPoolStateOutline(allAssetsData[log.args.reserve])}
 
 ${createPositionOutlineForUser(allAssetsData)}
 
