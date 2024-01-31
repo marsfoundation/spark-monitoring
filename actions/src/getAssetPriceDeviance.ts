@@ -27,6 +27,7 @@ import {
 
 const SPARKLEND_POOL = '0xC13e21B648A5Ee794902342038FF3aDAB66BE987' as const
 const SPARKLEND_ORACLE = '0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9' as const
+const COOLDOWN_PERIOD = 500 as const
 
 export const getAssetPriceDeviance: ActionFn = async (context: Context, event: Event) => {
 	const blockEvent = event as BlockEvent
@@ -39,15 +40,8 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 	const sparkAssetSymbols = (await Promise.all(sparkAssets.map(async asset => await new Contract(asset, erc20Abi, provider).symbol()))) as string[]
 
 	const oraclePrices = (await Promise.all(sparkAssets.map(async (asset, index) => {return {[`${sparkAssetSymbols[index]}`]: await oracle.getAssetPrice(asset)}})))
-		.reduce((acc, curr) => { return { ...acc, ...curr }}, {})
+	.reduce((acc, curr) => { return { ...acc, ...curr }}, {})
 
-	// const coinmarketcapApiKey = await context.secrets.get('COINMARKETCAP_API_KEY')
-	// const coinmarketcapCallResult = await axios.get(`https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest?symbol=${sparkAssetSymbols.join(',')}`, {
-	//	 headers: {
-	//		 'X-CMC_PRO_API_KEY': coinmarketcapApiKey,
-	//	 },
-	// })
-	// const coinmarketcapPrices = sparkAssetSymbols.map(symbol => BigInt(Math.floor(coinmarketcapCallResult.data.data[symbol][0].quote.USD.price * 1_00000000)))
 
 	const coingeckoCoinIds: Record<string, string> = {
 		'GNO': 'gnosis',
@@ -56,11 +50,14 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 		'USDC': 'usd-coin',
 		'wstETH': 'wrapped-steth',
 		'WBTC': 'wrapped-bitcoin',
+		'BTC': 'bitcoin',
 		'USDT': 'tether',
 		'DAI': 'dai',
 		'WETH': 'weth',
 	}
-	const coingeckoCallResult = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=${sparkAssetSymbols.map(symbol => coingeckoCoinIds[symbol] || symbol).join(',')}&vs_currencies=USD`) as any
+	const nonSparkAssetsToTrack = ['BTC']
+	const coingeckoCallResult = await axios
+		.get(`https://api.coingecko.com/api/v3/simple/price?ids=${[...sparkAssetSymbols, ...nonSparkAssetsToTrack].map(symbol => coingeckoCoinIds[symbol] || symbol).join(',')}&vs_currencies=USD`) as any
 	const coingeckoPrices = Object.keys(coingeckoCallResult.data)
 		.map(key => {return {[invertRecord(coingeckoCoinIds)[key]]: BigInt(Math.floor(coingeckoCallResult.data[key].usd * 1_00000000))}})
 		.reduce((acc, curr) => { return { ...acc, ...curr }}, {})
@@ -84,12 +81,11 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 		}
 
 		const blockOfLastAlertForAsset = await context.storage.getNumber(`getAssetPriceDeviance-oracle-vs-off-chain-${assetSymbol}`)
-		const cooldownPeriod = 500
-		const devianceThreshold = assetSymbol == 'GNO' ? 1500 : 750  // modify this to test alerts triggers
+		const oracleDevianceThreshold = assetSymbol == 'GNO' ? 1500 : 750  // modify this to test alerts triggers
 
 		if (
-			devianceInBasisPoints >= devianceThreshold
-			&& blockEvent.blockNumber >= cooldownPeriod + blockOfLastAlertForAsset
+			devianceInBasisPoints >= oracleDevianceThreshold
+			&& blockEvent.blockNumber >= COOLDOWN_PERIOD + blockOfLastAlertForAsset
 		) {
 			await context.storage.putNumber(`getAssetPriceDeviance-oracle-vs-off-chain-${assetSymbol}`, blockEvent.blockNumber)
 			slackMessages.push(
@@ -101,12 +97,28 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 					blockEvent.blockNumber,
 				)
 			)
-
 		}
 	}
 
+	// Custom WBTC vs BTC check
+	const wbtcDevianceInBasisPoints = getDevianceInBasisPoints(offChainPrices['WBTC'], offChainPrices['BTC'])
+	const wbtcBtcDevianceThreshold = 200
+	const lastWbtcAlert = await context.storage.getNumber(`getAssetPriceDeviance-custom-WBTC-BTC`)
+	if (
+		wbtcDevianceInBasisPoints >= wbtcBtcDevianceThreshold
+		&& blockEvent.blockNumber >= COOLDOWN_PERIOD + lastWbtcAlert
+	) {
+		await context.storage.putNumber(`getAssetPriceDeviance-custom-WBTC-BTC`, blockEvent.blockNumber)
+		slackMessages.push(`\`\`\`
+🚨⚖️ WBTC/BTC PRICE DEVIANCE 🚨⚖️
+WBTC:         ${formatBigInt(offChainPrices['WBTC'], 8)}
+BTC:          ${formatBigInt(offChainPrices['BTC'], 8)}
+Deviance:     ${Number(wbtcDevianceInBasisPoints)/100}% (${wbtcDevianceInBasisPoints} bps)
+Block Number: ${blockEvent.blockNumber}
+              (off-chain source)\`\`\``)
+	}
+
 	// Custom checks for derivative assets vs their underlying assets
-	// - Oracle WBTC vs off-chain BTC
 	// - Oracle wstETH vs oracle ETH multiplied by Lido ratio
 	// - Oracle rETH vs oracle ETH multiplied by Rocket ratio
 	// - Oracle sDAI vs oracle DAI multiplied by pot dsr ratio
