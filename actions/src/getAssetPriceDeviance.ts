@@ -65,9 +65,12 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 		.map(key => {return {[invertRecord(coingeckoCoinIds)[key]]: BigInt(Math.floor(coingeckoCallResult.data[key].usd * 1_00000000))}})
 		.reduce((acc, curr) => { return { ...acc, ...curr }}, {})
 
+	//  Here we determine what are our official off-chain prices - for now just coingecko
 	const offChainPrices = coingeckoPrices
 
 	let slackMessages = [] as string[]
+
+	// Check for an oracle vs off-chain price deviation
 	for(const assetSymbol of sparkAssetSymbols){
 		const devianceInBasisPoints = getDevianceInBasisPoints(oraclePrices[assetSymbol], offChainPrices[assetSymbol])
 
@@ -80,7 +83,7 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 			console.log(`Prices of ${assetSymbol} are equal (${oraclePrices[assetSymbol].toString()})`)
 		}
 
-		const blockOfLastAlertForAsset = await context.storage.getNumber(`getAssetPriceDeviance-${assetSymbol}`)
+		const blockOfLastAlertForAsset = await context.storage.getNumber(`getAssetPriceDeviance-oracle-vs-off-chain-${assetSymbol}`)
 		const cooldownPeriod = 500
 		const devianceThreshold = assetSymbol == 'GNO' ? 1500 : 750  // modify this to test alerts triggers
 
@@ -88,7 +91,7 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 			devianceInBasisPoints >= devianceThreshold
 			&& blockEvent.blockNumber >= cooldownPeriod + blockOfLastAlertForAsset
 		) {
-			await context.storage.putNumber(`getAssetPriceDeviance-${assetSymbol}`, blockEvent.blockNumber)
+			await context.storage.putNumber(`getAssetPriceDeviance-oracle-vs-off-chain-${assetSymbol}`, blockEvent.blockNumber)
 			slackMessages.push(
 				formatHighDevianceMessage(
 					assetSymbol,
@@ -101,7 +104,14 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 
 		}
 	}
-	console.log(slackMessages)
+
+	// Custom checks for derivative assets vs their underlying assets
+	// - Oracle WBTC vs off-chain BTC
+	// - Oracle wstETH vs oracle ETH multiplied by Lido ratio
+	// - Oracle rETH vs oracle ETH multiplied by Rocket ratio
+	// - Oracle sDAI vs oracle DAI multiplied by pot dsr ratio
+
+	console.log({slackMessages})
 	await sendMessagesToSlack(slackMessages, context, 'ALERTS_IMPORTANT_SLACK_WEBHOOK_URL')
 }
 
