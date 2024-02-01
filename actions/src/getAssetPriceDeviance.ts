@@ -157,7 +157,7 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 		await context.storage.putNumber(`getAssetPriceDeviance-pegged-WBTC-BTC`, blockEvent.blockNumber)
 		slackMessages.push(
 `\`\`\`
-🚨⚖️ WBTC/BTC OFF-CHAIN PRICE DEVIANCE 🚨⚖️
+🚨🌽 WBTC/BTC OFF-CHAIN PRICE DEVIANCE 🚨🌽
 WBTC:         ${formatBigInt(offChainPrices['WBTC'], 8)}
 BTC:          ${formatBigInt(offChainPrices['BTC'], 8)}
 Deviance:     ${formatBasisPoints(wbtcDevianceInBasisPoints)}
@@ -201,7 +201,7 @@ const createDerivativeAssetDevianceMessage = async (
 	) {
 		await context.storage.putNumber(`getAssetPriceDeviance-derivative-${derivativeAssetSymbol}`, blockNumber)
 		return `\`\`\`
-🚨⚖️ ${derivativeAssetSymbol} PRIMARY/MARKET PRICE DEVIANCE 🚨⚖️
+🚨📊 ${derivativeAssetSymbol} PRIMARY/MARKET PRICE DEVIANCE 🚨📊
 Primary Value: ${formatBigInt(derivativeAssetPrimaryValue, 8)}
 Market Price:  ${formatBigInt(derivativeAssetPrice, 8)}
 Deviance:      ${formatBasisPoints(devianceInBasisPoints)}
