@@ -87,3 +87,10 @@ actions:
             network:
               - 1
             blocks: 5
+
+      monitor-high-transaction-gas:
+        description: Monitors transactions and alerts on high gas transactions
+        function: src/getHighGasTransaction:getHighGasTransaction
+        trigger:
+          type: alert
+          alert: {}
