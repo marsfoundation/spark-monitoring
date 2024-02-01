@@ -16,6 +16,8 @@ import {
 	oracleAbi,
 	poolAbi,
 	potAbi,
+	rethAbi,
+	wstethAbi,
 } from './abis'
 
 import {
@@ -27,14 +29,18 @@ import {
 	sendMessagesToSlack,
 } from './utils'
 
+const SLACK_WEBHOOK_URL = 'ALERTS_IMPORTANT_SLACK_WEBHOOK_URL' as const
+
 const SPARKLEND_POOL = '0xC13e21B648A5Ee794902342038FF3aDAB66BE987' as const
 const SPARKLEND_ORACLE = '0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9' as const
 const MAKER_POT = '0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7' as const
+const LIDO_WSTETH = '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0' as const
+const ROCKET_RETH = '0xae78736Cd615f374D3085123A210448E74Fc6393' as const
 
 const DEFAULT_ORACLE_DEVIANCE_THRESHOLD = 750 as const
 const GNO_ORACLE_DEVIANCE_THRESHOLD = 1500 as const
-const DERIVATIVE_DEVIANCE_THRESHOLD = 0 as const
-const WBTC_BTC_DEVIANCE_THRESHOLD = 0 as const
+const DERIVATIVE_DEVIANCE_THRESHOLD = 250 as const
+const WBTC_BTC_DEVIANCE_THRESHOLD = 250 as const
 
 const COOLDOWN_PERIOD = 500 as const
 
@@ -81,13 +87,7 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 		const devianceInBasisPoints = getDevianceInBasisPoints(oraclePrices[assetSymbol], offChainPrices[assetSymbol])
 
 		const deviancePercentage = Number(devianceInBasisPoints)/100
-		if (oraclePrices[assetSymbol] < offChainPrices[assetSymbol]) {
-			console.log(`Off-chain price of ${assetSymbol} is higher (${offChainPrices[assetSymbol].toString()}) (oracle: ${oraclePrices[assetSymbol].toString()}) (deviance: ${deviancePercentage}%)`)
-		} else if (oraclePrices[assetSymbol] > offChainPrices[assetSymbol]) {
-			console.log(`   Oracle price of ${assetSymbol} is higher (${oraclePrices[assetSymbol].toString()}) (off-chain: ${offChainPrices[assetSymbol].toString()}) (deviance: ${deviancePercentage}%)`)
-		} else {
-			console.log(`Prices of ${assetSymbol} are equal (${oraclePrices[assetSymbol].toString()})`)
-		}
+		console.log(`${assetSymbol} - off-chain price: ${offChainPrices[assetSymbol].toString()} - oracle price: ${oraclePrices[assetSymbol].toString()} - deviance: ${deviancePercentage}%`)
 
 		const blockOfLastAlertForAsset = await context.storage.getNumber(`getAssetPriceDeviance-oracle-vs-off-chain-${assetSymbol}`)
 		const oracleDevianceThreshold = assetSymbol == 'GNO' ? GNO_ORACLE_DEVIANCE_THRESHOLD : DEFAULT_ORACLE_DEVIANCE_THRESHOLD  // modify this to test alerts triggers
@@ -116,19 +116,20 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 		context,
 		sdaiDaiExchangeRatio,
 		'sDAI',
-		oraclePrices['sDAI'],
+		offChainPrices['sDAI'],
 		oraclePrices['DAI'],
 		blockEvent.blockNumber
 	)
 	if (sdaiMessage) slackMessages.push(sdaiMessage)
 
 	// Custom wstETH vs ETH check
-	const wstethEthExchangeRatio = 1050000000000000000000000000n // TODO: get from Lido
+	const wstETH = new Contract(LIDO_WSTETH, wstethAbi, provider)
+	const wstethEthExchangeRatio = (await wstETH.stEthPerToken()) * BigInt(10 ** 9) // Exchange ratio has to be in ray
 	const wstethMessage = await createDerivativeAssetDevianceMessage(
 		context,
 		wstethEthExchangeRatio,
 		'wstETH',
-		oraclePrices['wstETH'],
+		offChainPrices['wstETH'],
 		oraclePrices['WETH'],
 		blockEvent.blockNumber
 	)
@@ -136,29 +137,31 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 
 
 	// Custom rETH vs ETH check
-	const rethEthExchangeRatio = 1050000000000000000000000000n // TODO: get from Rocket
+	const rETH = new Contract(ROCKET_RETH, rethAbi, provider)
+	const rethEthExchangeRatio = (await rETH.getExchangeRate()) * BigInt(10 ** 9) // Exchange ratio has to be in ray
 	const rethMessage = await createDerivativeAssetDevianceMessage(
 		context,
 		rethEthExchangeRatio,
 		'rETH',
-		oraclePrices['rETH'],
+		offChainPrices['rETH'],
 		oraclePrices['WETH'],
 		blockEvent.blockNumber
 	)
 	if (rethMessage) slackMessages.push(rethMessage)
 
 	// Custom WBTC vs BTC check
-	const wbtcDevianceInBasisPoints = getDevianceInBasisPoints(offChainPrices['WBTC'], offChainPrices['BTC'])
+	const wbtcDevianceInBasisPoints = getDevianceInBasisPoints(oraclePrices['WBTC'], offChainPrices['BTC'])
 	const lastWbtcAlert = await context.storage.getNumber(`getAssetPriceDeviance-pegged-WBTC-BTC`)
-	if (
+	console.log(`WBTC/BTC - WBTC price: ${formatBigInt(oraclePrices['WBTC'], 8)} - BTC price: ${formatBigInt(offChainPrices['BTC'], 8)} - deviance: ${Number(wbtcDevianceInBasisPoints)/100}%`)
+		if (
 		wbtcDevianceInBasisPoints >= WBTC_BTC_DEVIANCE_THRESHOLD
 		&& blockEvent.blockNumber >= COOLDOWN_PERIOD + lastWbtcAlert
 	) {
 		await context.storage.putNumber(`getAssetPriceDeviance-pegged-WBTC-BTC`, blockEvent.blockNumber)
 		slackMessages.push(
 `\`\`\`
-🚨🌽 WBTC/BTC OFF-CHAIN PRICE DEVIANCE 🚨🌽
-WBTC:         ${formatBigInt(offChainPrices['WBTC'], 8)}
+🚨🌽 WBTC/BTC PRICE DEVIANCE 🚨🌽
+WBTC:         ${formatBigInt(oraclePrices['WBTC'], 8)}
 BTC:          ${formatBigInt(offChainPrices['BTC'], 8)}
 Deviance:     ${formatBasisPoints(wbtcDevianceInBasisPoints)}
 Block Number: ${blockEvent.blockNumber}\`\`\``
@@ -166,7 +169,7 @@ Block Number: ${blockEvent.blockNumber}\`\`\``
 	}
 
 	console.log({slackMessages})
-	await sendMessagesToSlack(slackMessages, context, 'TEST_SLACK_WEBHOOK_URL')
+	await sendMessagesToSlack(slackMessages, context, SLACK_WEBHOOK_URL)
 }
 
 const formatOracleDevianceMessage = (
@@ -195,13 +198,14 @@ const createDerivativeAssetDevianceMessage = async (
 	const derivativeAssetPrimaryValue = underlyingAssetPrice * exchangeRatioInRay / BigInt(10 ** 27)
 	const devianceInBasisPoints = getDevianceInBasisPoints(derivativeAssetPrice, derivativeAssetPrimaryValue)
 	const lastAlert = await context.storage.getNumber(`getAssetPriceDeviance-derivative-${derivativeAssetSymbol}`)
+	console.log(`${derivativeAssetSymbol} - ${derivativeAssetSymbol} price: ${formatBigInt(derivativeAssetPrice, 8)} - underlying price: ${formatBigInt(underlyingAssetPrice, 8)} - deviance: ${Number(devianceInBasisPoints)/100}%`)
 	if (
 		devianceInBasisPoints >= DERIVATIVE_DEVIANCE_THRESHOLD
 		&& blockNumber >= COOLDOWN_PERIOD + lastAlert
 	) {
 		await context.storage.putNumber(`getAssetPriceDeviance-derivative-${derivativeAssetSymbol}`, blockNumber)
 		return `\`\`\`
-🚨📊 ${derivativeAssetSymbol} PRIMARY/MARKET PRICE DEVIANCE 🚨📊
+🚨📊 ${derivativeAssetSymbol} PRIMARY VALUE / MARKET PRICE DEVIANCE 🚨📊
 Primary Value: ${formatBigInt(derivativeAssetPrimaryValue, 8)}
 Market Price:  ${formatBigInt(derivativeAssetPrice, 8)}
 Deviance:      ${formatBasisPoints(devianceInBasisPoints)}
