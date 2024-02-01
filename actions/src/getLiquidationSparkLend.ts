@@ -28,6 +28,10 @@ import {
 	transactionAlreadyProcessed,
 } from './utils'
 
+import {
+	HIGH_GAS_TRANSACTION_THRESHOLD
+} from './getHighGasTransaction'
+
 
 const SPARKLEND_POOL = '0xC13e21B648A5Ee794902342038FF3aDAB66BE987'
 const SPARKLEND_ORACLE = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
@@ -50,7 +54,7 @@ export const getLiquidationSparkLend: ActionFn = async (context: Context, event:
 	const slackMessages = await Promise.all(
 		liquidationLogs.map(async (log) => {
 			const allAssetsData = await fetchAllAssetsData(log && log.args[2], pool, oracle, provider)
-			return log && formatLiquidationMessage(allAssetsData, log, txEvent.hash)
+			return log && formatLiquidationMessage(allAssetsData, log, txEvent)
 		})
 	) as string[]
 
@@ -58,7 +62,7 @@ export const getLiquidationSparkLend: ActionFn = async (context: Context, event:
 
 }
 
-const formatLiquidationMessage = (allAssetsData: AssetsData, log: LogDescription, txHash: string) => {
+const formatLiquidationMessage = (allAssetsData: AssetsData, log: LogDescription, txEvent: TransactionEvent) => {
 	console.log(log.args)
 	return `\`\`\`
 ❌ LIQUIDATED:   ${formatAssetAmount(allAssetsData[log.args[0]], log.args[4])}
@@ -69,5 +73,5 @@ const formatLiquidationMessage = (allAssetsData: AssetsData, log: LogDescription
 
 ${createPositionOutlineForUser(allAssetsData)}
 
-${createEtherscanTxLink(txHash)}\`\`\``
+${BigInt(txEvent.gasUsed) >= HIGH_GAS_TRANSACTION_THRESHOLD ? '⛽️🔥 HIGH GAS TRANSACTION ⛽️🔥\n' : ''}${createEtherscanTxLink(txEvent.hash)}\`\`\``
 }

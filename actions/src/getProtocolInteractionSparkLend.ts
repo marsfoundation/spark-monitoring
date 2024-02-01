@@ -33,6 +33,10 @@ import {
 	transactionAlreadyProcessed,
 } from './utils'
 
+import {
+	HIGH_GAS_TRANSACTION_THRESHOLD
+} from './getHighGasTransaction'
+
 const POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987"
 const ORACLE_ADDRESS = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
 
@@ -78,7 +82,7 @@ ${getAddressAlias(log.args.user) == aliases.MAKER_CORE_D3M && allAssetsData[log.
 	? createD3MOutline(allAssetsData[log.args.reserve])
 	: createPositionOutlineForUser(allAssetsData)}
 
-${createEtherscanTxLink(txEvent.hash)}\`\`\``
+${BigInt(txEvent.gasUsed) >= HIGH_GAS_TRANSACTION_THRESHOLD ? '⛽️🔥 HIGH GAS TRANSACTION ⛽️🔥\n' : ''}${createEtherscanTxLink(txEvent.hash)}\`\`\``
 }
 
 const formatInteractionName = (name: string) => {
