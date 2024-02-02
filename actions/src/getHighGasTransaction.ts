@@ -12,7 +12,7 @@ import {
     transactionAlreadyProcessed,
 } from './utils'
 
-export const HIGH_GAS_TRANSACTION_THRESHOLD = 1_500_000n as const
+export const HIGH_GAS_TRANSACTION_THRESHOLD = 2_500_000n as const
 
 export const getHighGasTransaction: ActionFn = async (context: Context, event: Event) => {
 	const transactionEvent = event as TransactionEvent
