@@ -25,6 +25,6 @@ export const getHighGasTransaction: ActionFn = async (context: Context, event: E
 
 ⛽️ Gas used: ${formatBigInt(transactionEvent.gasUsed, 0).slice(0, -2)}
 
-${createEtherscanTxLink(transactionEvent.hash)}\`\`\``], context, 'ALERTS_IMPORTANT_SLACK_WEBHOOK_URL')
+${createEtherscanTxLink(transactionEvent.hash)}\`\`\``], context, 'HIGH_GAS_SLACK_WEBHOOK_URL')
     }
 }
