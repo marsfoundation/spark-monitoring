@@ -94,3 +94,13 @@ actions:
         trigger:
           type: alert
           alert: {}
+
+      clean-transaction-registry:
+        description: Keeps size of the storage in check, by removing transactions older than 100 blocks from the registry.
+        function: src/cleanTransactionRegistry:cleanTransactionRegistry
+        trigger:
+          type: block
+          block:
+            network:
+              - 1
+            blocks: 100
