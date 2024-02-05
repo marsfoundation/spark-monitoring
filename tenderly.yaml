@@ -104,3 +104,16 @@ actions:
             network:
               - 1
             blocks: 100
+
+      monitor-lift-on-dschief:
+        description: Monitors lift calls on DS Chief Maker Governance contract
+        function: src/getLiftOnDSChief:getLiftOnDSChief
+        trigger:
+          type: transaction
+          transaction:
+            status:
+              - mined
+            filters:
+              - network: 1
+                status: success
+                to: 0x0a3f6849f78076aefadf113f5bed87720274ddc0
