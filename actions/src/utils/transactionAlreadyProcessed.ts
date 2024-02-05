@@ -14,7 +14,7 @@ export const transactionAlreadyProcessed = async (actionName: string, context: C
     console.log(`Transaction ${txEvent.hash} is being saved as processed by action ${actionName}`)
     await context.storage.putJson(`${actionName}-tx-registry`, {
         ...processedTransactionsRegistry,
-        [txEvent.hash]: 1,
+        [txEvent.hash]: txEvent.blockNumber,
     })
 
     return false
