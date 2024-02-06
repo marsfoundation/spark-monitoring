@@ -49,5 +49,5 @@ ${createGnosisscanTxLink(transactionEvent.hash)}\`\`\``)
 ${createGnosisscanTxLink(transactionEvent.hash)}\`\`\``)
     }
 
-    await sendMessagesToSlack(messages, context, 'TEST_SLACK_WEBHOOK_URL')
+    await sendMessagesToSlack(messages, context, 'ALERTS_IMPORTANT_SLACK_WEBHOOK_URL')
 }
