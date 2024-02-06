@@ -109,24 +109,12 @@ actions:
         description: Monitors lift calls on DS Chief Maker Governance contract
         function: src/getLiftOnDSChief:getLiftOnDSChief
         trigger:
-          type: transaction
-          transaction:
-            status:
-              - mined
-            filters:
-              - network: 1
-                status: success
-                to: 0x0a3f6849f78076aefadf113f5bed87720274ddc0
+          type: alert
+          alert: {}
 
       monitor-exec-on-spark-proxy:
         description: Monitors exec calls on Spark Protocol SubProxy contract
         function: src/getExecOnSparkProxy:getExecOnSparkProxy
         trigger:
-          type: transaction
-          transaction:
-            status:
-              - mined
-            filters:
-              - network: 1
-                status: success
-                to: 0x3300f198988e4C9C63F75dF86De36421f06af8c4
+          type: alert
+          alert: {}
