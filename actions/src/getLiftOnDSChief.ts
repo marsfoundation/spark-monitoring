@@ -26,5 +26,5 @@ export const getLiftOnDSChief: ActionFn = async (context: Context, event: Event)
 
 🎩 Current hat: ${hat}
 
-${createEtherscanTxLink(transactionEvent.hash)}\`\`\``], context, 'TEST_SLACK_WEBHOOK_URL')
+${createEtherscanTxLink(transactionEvent.hash)}\`\`\``], context, 'ALERTS_IMPORTANT_SLACK_WEBHOOK_URL')
 }
