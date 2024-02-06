@@ -13,6 +13,7 @@ export * from './types'
 
 export * from './messages/createD3MOutline'
 export * from './messages/createEtherscanTxLink'
+export * from './messages/createGnosisscanTxLink'
 export * from './messages/createPoolStateOutline'
 export * from './messages/createPositionOutlineForUser'
 export * from './messages/shortenAddress'

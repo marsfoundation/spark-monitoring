@@ -11,7 +11,7 @@ export const getExecOnSparkProxy: ActionFn = async (context: Context, event: Eve
     const transactionEvent = event as TransactionEvent
 
     await sendMessagesToSlack([`\`\`\`
-✨✨✨ Exec called on Spark SubProxy ✨✨✨
+🏛️✨ Exec called on Spark SubProxy 🏛️✨
 
 ${createEtherscanTxLink(transactionEvent.hash)}\`\`\``], context, 'ALERTS_IMPORTANT_SLACK_WEBHOOK_URL')
 }
