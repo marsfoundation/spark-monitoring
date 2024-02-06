@@ -5,19 +5,26 @@ import {
     TransactionEvent,
 } from '@tenderly/actions'
 
-import { Contract, JsonRpcProvider } from 'ethers'
+import {
+    Contract,
+} from 'ethers'
 
-import { ambBridgeExecutorAbi } from './abis'
+import {
+    ambBridgeExecutorAbi,
+} from './abis'
 
-import { createGnosisscanTxLink, sendMessagesToSlack } from './utils'
+import {
+    createGnosisscanTxLink,
+    createProvider,
+    sendMessagesToSlack,
+} from './utils'
 
 const AMB_BRIDGE_EXECUTOR = '0xc4218c1127cb24a0d6c1e7d25dc34e10f2625f5a' as const
 
 export const getGnosisExecutorOperations: ActionFn = async (context: Context, event: Event) => {
     const transactionEvent = event as TransactionEvent
 
-    const rpcUrl = await context.secrets.get('GNOSIS_RPC_URL')
-	const provider = new JsonRpcProvider(rpcUrl)
+	const provider = await createProvider(context, 'GNOSIS_RPC_URL')
     const bridgeExecutor = new Contract(AMB_BRIDGE_EXECUTOR, ambBridgeExecutorAbi, provider)
 
     const executorLogs = transactionEvent.logs

@@ -1,5 +1,4 @@
 import {
-	ActionFn,
 	Context,
 	Event,
 	TransactionEvent,
@@ -21,9 +20,9 @@ import {
 	calculateDollarValueInCents,
 	createD3MOutline,
 	createEtherscanTxLink,
-	createMainnetProvider,
 	createPoolStateOutline,
 	createPositionOutlineForUser,
+	createProvider,
 	fetchAllAssetsData,
 	formatAssetAmount,
 	getAddressAlias,
@@ -37,21 +36,26 @@ import {
 	HIGH_GAS_TRANSACTION_THRESHOLD
 } from './getHighGasTransaction'
 
-const POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987"
-const ORACLE_ADDRESS = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
-
-export const getProtocolInteractionSparkLend: ActionFn = async (context: Context, event: Event) => {
+const getProtocolInteractionSparkLend = (
+	rpcUrlSecret: string,
+	instanceName: string,
+	poolAddress: string,
+	oracleAddress: string,
+	slackWebhookUrlSecret: string,
+	dollarValueThreshold: number,
+	slackMessagePrefix: string,
+) => async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent
 
-	if (await transactionAlreadyProcessed('getProtocolInteractionSparklend', context, txEvent)) return
+	if (await transactionAlreadyProcessed(`getProtocolInteractionSparklend-${instanceName}`, context, txEvent)) return
 
-	const provider = await createMainnetProvider(context)
+	const provider = await createProvider(context, rpcUrlSecret)
 
-	const pool = new Contract(POOL_ADDRESS, poolAbi, provider)
-	const oracle = new Contract(ORACLE_ADDRESS, oracleAbi, provider)
+	const pool = new Contract(poolAddress, poolAbi, provider)
+	const oracle = new Contract(oracleAddress, oracleAbi, provider)
 
 	const preFilteredLogs = txEvent.logs
-		.filter(log => log.address.toLowerCase() == POOL_ADDRESS.toLowerCase())
+		.filter(log => log.address.toLowerCase() == poolAddress.toLowerCase())
 		.map(log => pool.interface.parseLog(log))
 		.filter(log => log?.name == 'Supply' || log?.name == 'Borrow' || log?.name == 'Withdraw' || log?.name == 'Repay')
 
@@ -61,10 +65,10 @@ export const getProtocolInteractionSparkLend: ActionFn = async (context: Context
 		.reduce((acc, curr, index) => {return {...acc, [users[index]]: curr}}, {})
 
 	const slackMessages = preFilteredLogs
-		.filter(log => log && calculateDollarValueInCents(allAssetsDataForAllUsers[log.args.user][log.args.reserve], log.args.amount) > BigInt(100000000)) // value bigger than $1.000.000 in cents
-		.map(log => log && formatProtocolInteractionAlertMessage(log, txEvent, allAssetsDataForAllUsers[log.args.user])) as string[]
+		.filter(log => log && calculateDollarValueInCents(allAssetsDataForAllUsers[log.args.user][log.args.reserve], log.args.amount) > BigInt(dollarValueThreshold * 100)) // value bigger than $1.000.000 in cents
+		.map(log => log && `\`\`\`${slackMessagePrefix}${formatProtocolInteractionAlertMessage(log, txEvent, allAssetsDataForAllUsers[log.args.user])}\`\`\``) as string[]
 
-	await sendMessagesToSlack(slackMessages, context, 'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL')
+	await sendMessagesToSlack(slackMessages, context, slackWebhookUrlSecret)
 }
 
 const formatProtocolInteractionAlertMessage = (
@@ -73,7 +77,7 @@ const formatProtocolInteractionAlertMessage = (
 	allAssetsData: AssetsData,
 ) => {
 	const title = formatInteractionName(log.name)
-	return `\`\`\`
+	return `
 ${title}: ${formatAssetAmount(allAssetsData[log.args.reserve], log.args.amount)}
 👨‍💼 USER:${' '.repeat(title.length - 6)}${getAddressAlias(log.args.user) || shortenAddress(log.args.user)}
 🏦 POOL:${' '.repeat(title.length - 6)}${createPoolStateOutline(allAssetsData[log.args.reserve])}
@@ -82,7 +86,7 @@ ${getAddressAlias(log.args.user) == aliases.MAKER_CORE_D3M && allAssetsData[log.
 	? createD3MOutline(allAssetsData[log.args.reserve])
 	: createPositionOutlineForUser(allAssetsData)}
 
-${BigInt(txEvent.gasUsed) >= HIGH_GAS_TRANSACTION_THRESHOLD ? '⛽️🔥 HIGH GAS TRANSACTION ⛽️🔥\n' : ''}${createEtherscanTxLink(txEvent.hash)}\`\`\``
+${BigInt(txEvent.gasUsed) >= HIGH_GAS_TRANSACTION_THRESHOLD ? '⛽️🔥 HIGH GAS TRANSACTION ⛽️🔥\n' : ''}${createEtherscanTxLink(txEvent.hash)}`
 }
 
 const formatInteractionName = (name: string) => {
@@ -92,3 +96,23 @@ const formatInteractionName = (name: string) => {
 	if(name == 'Repay') return '🤑 REPAY'
 	return ''
 }
+
+export const getProtocolInteractionSparkLendMainnet = getProtocolInteractionSparkLend(
+	'ETH_RPC_URL',
+	'mainnet',
+	'0xC13e21B648A5Ee794902342038FF3aDAB66BE987',
+	'0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9',
+	'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL',
+	1000000,
+	'',
+)
+
+export const getProtocolInteractionSparkLendGnosis = getProtocolInteractionSparkLend(
+	'GNOSIS_RPC_URL',
+	'gnosis',
+	'0x2Dae5307c5E3FD1CF5A72Cb6F698f915860607e0',
+	'0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9',
+	'GNOSIS_SPARKLEND_ALERTS_SLACK_WEBHOOK_URL',
+	10000,
+	'🦉 GNOSIS CHAIN 🦉\n',
+)

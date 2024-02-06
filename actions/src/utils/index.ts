@@ -1,5 +1,6 @@
 export * from './calculateDollarValueInCents'
 export * from './createMainnetProvider'
+export * from './createProvider'
 export * from './fetchAllAssetsData'
 export * from './getAddressAlias'
 export * from './getDevianceInBasisPoints'

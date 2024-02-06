@@ -7,7 +7,6 @@ import {
 
 import {
 	Contract,
-	JsonRpcProvider,
 	LogDescription,
 } from 'ethers'
 
@@ -19,6 +18,7 @@ import {
 
 import {
 	createEtherscanTxLink,
+	createMainnetProvider,
 	formatBigInt,
 	sendMessagesToSlack,
 	transactionAlreadyProcessed,
@@ -55,8 +55,7 @@ export const getConfigurationChangeAave: ActionFn = async (context: Context, eve
 
 	if (await transactionAlreadyProcessed('getConfigurationChangeAave', context, transactionEvent)) return
 
-	const rpcUrl = await context.secrets.get('ETH_RPC_URL')
-	const provider = new JsonRpcProvider(rpcUrl)
+	const provider = await createMainnetProvider(context)
 
 	const sparkPool = new Contract(SPARK_POOL_ADDRESS, poolAbi, provider)
 	const aavePoolConfigurator = new Contract(AAVE_POOL_CONFIGURATOR_ADDRESS, poolConfiguratorAbi, provider)

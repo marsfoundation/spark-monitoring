@@ -11,7 +11,8 @@ export const cleanTransactionRegistry: ActionFn = async (context: Context, event
     await removeStaleRecordsFromRegistry('getConfigurationChangeAave', blockEvent, context)
     await removeStaleRecordsFromRegistry('getHighGasTransaction', blockEvent, context)
     await removeStaleRecordsFromRegistry('getLiquidationSparkLend', blockEvent, context)
-    await removeStaleRecordsFromRegistry('getProtocolInteractionSparklend', blockEvent, context)
+    await removeStaleRecordsFromRegistry('getProtocolInteractionSparklend-mainnet', blockEvent, context)
+    await removeStaleRecordsFromRegistry('getProtocolInteractionSparklend-gnosis', blockEvent, context)
 }
 
 const removeStaleRecordsFromRegistry = async (actionName: string, blockEvent: BlockEvent, context: Context) => {
