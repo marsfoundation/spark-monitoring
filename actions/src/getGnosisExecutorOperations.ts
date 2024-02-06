@@ -41,11 +41,10 @@ ${createGnosisscanTxLink(transactionEvent.hash)}\`\`\``)
 
     for (const log of executeLogs) {
         const action = await bridgeExecutor.getActionsSetById(log?.args.id)
-        console.log(action)
-        console.log(action.targets)
-        console.log(action[0])
         messages.push(`\`\`\`
 🏛️🦉 Execute called on Gnosis Executor 🏛️🦉
+
+🪄 Spell${action.targets.length > 1 ? 's:' : ':'} ${action.targets.join(', ')}
 
 ${createGnosisscanTxLink(transactionEvent.hash)}\`\`\``)
     }
