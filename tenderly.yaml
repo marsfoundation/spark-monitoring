@@ -39,7 +39,14 @@ actions:
 
       monitor-user-liquidations-sparklend:
         description: Monitors liquidations in SparkLend protocol
-        function: src/getLiquidationSparkLend:getLiquidationSparkLend
+        function: src/getLiquidationSparkLend:getLiquidationSparkLendMainnet
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-user-liquidations-sparklend-gnosis:
+        description: Monitors liquidations in Gnosis instance SparkLend protocol
+        function: src/getLiquidationSparkLend:getLiquidationSparkLendGnosis
         trigger:
           type: alert
           alert: {}
