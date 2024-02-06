@@ -123,12 +123,6 @@ actions:
         description: Monitors process of queuing and executing on Gnosis Chain
         function: src/getGnosisExecutorOperations:getGnosisExecutorOperations
         trigger:
-          type: transaction
-          transaction:
-            status:
-              - mined
-            filters:
-              - network: 100
-                status: success
-                to: 0xc4218C1127cB24a0D6c1e7D25dc34e10f2625f5A
+          type: alert
+          alert: {}
 
