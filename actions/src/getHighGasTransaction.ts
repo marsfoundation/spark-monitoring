@@ -23,19 +23,10 @@ export const getHighGasTransaction: ActionFn = async (context: Context, event: E
     const provider = await createMainnetProvider(context)
 
     const block = await provider.getBlock(transactionEvent.blockNumber)
-    if (!block) return
+    if (!block || !block.baseFeePerGas) return
     console.log({block})
 
-    const receipt = await provider.getTransactionReceipt(transactionEvent.hash)
-    if (!receipt) return
-    console.log({receipt})
-
-    const baseFee = block.baseFeePerGas
-    if (!baseFee) return
-
-    const paidFee = receipt.gasPrice
-
-    const deviance = getDevianceInBasisPoints(baseFee, paidFee)
+    const deviance = getDevianceInBasisPoints(block.baseFeePerGas, BigInt(transactionEvent.gasPrice))
 
     if (await transactionAlreadyProcessed('getHighGasTransaction', context, transactionEvent)) return
 
