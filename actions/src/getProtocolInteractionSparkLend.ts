@@ -113,6 +113,6 @@ export const getProtocolInteractionSparkLendGnosis = getProtocolInteractionSpark
 	'0x2Dae5307c5E3FD1CF5A72Cb6F698f915860607e0',
 	'0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9',
 	'GNOSIS_SPARKLEND_ALERTS_SLACK_WEBHOOK_URL',
-	10000,
+	100000,
 	'🦉 GNOSIS CHAIN 🦉\n',
 )

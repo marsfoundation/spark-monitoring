@@ -79,7 +79,7 @@ actions:
           alert: {}
 
       monitor-protocol-interactions-gnosis:
-        description: Monitors interactions with the Gnosis instance of Sparklend protocol that involve funds of amounts at least $10.000 worth of assets
+        description: Monitors interactions with the Gnosis instance of Sparklend protocol that involve funds of amounts at least $100.000 worth of assets
         function: src/getProtocolInteractionSparkLend:getProtocolInteractionSparkLendGnosis
         trigger:
           type: alert
