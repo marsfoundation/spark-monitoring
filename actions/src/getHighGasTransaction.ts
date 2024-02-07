@@ -7,6 +7,7 @@ import {
 
 import {
     createEtherscanTxLink,
+    createMainnetProvider,
     formatBigInt,
     sendMessagesToSlack,
     transactionAlreadyProcessed,
@@ -16,6 +17,15 @@ export const HIGH_GAS_TRANSACTION_THRESHOLD = 2_500_000n as const
 
 export const getHighGasTransaction: ActionFn = async (context: Context, event: Event) => {
 	const transactionEvent = event as TransactionEvent
+
+    const provider = await createMainnetProvider(context)
+
+    const block = await provider.getBlock(transactionEvent.blockNumber)
+    console.log({block})
+    const receipt = await provider.getTransactionReceipt(transactionEvent.hash)
+    console.log({receipt})
+    const tx = await provider.getTransaction(transactionEvent.hash)
+    console.log({tx})
 
     if (await transactionAlreadyProcessed('getHighGasTransaction', context, transactionEvent)) return
 
