@@ -131,7 +131,7 @@ Health Factor:    ${formatBigInt(BigInt(userHealth.healthFactor), 18)}\`\`\``
 export const getUserInfoSparkLend = getUserInfo(
 	SPARKLEND_POOL,
 	SPARKLEND_HEALTH_CHECKER,
-	'SLACK_WEBHOOK_URL',
+	'ALERTS_IMPORTANT_SLACK_WEBHOOK_URL',
 )
 
 export const getUserInfoAave = getUserInfo(
