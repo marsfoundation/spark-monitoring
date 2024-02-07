@@ -20,6 +20,7 @@ import {
 	calculateDollarValueInCents,
 	createD3MOutline,
 	createEtherscanTxLink,
+	createGnosisscanTxLink,
 	createPoolStateOutline,
 	createPositionOutlineForUser,
 	createProvider,
@@ -44,6 +45,7 @@ const getProtocolInteractionSparkLend = (
 	slackWebhookUrlSecret: string,
 	dollarValueThreshold: number,
 	slackMessagePrefix: string,
+	createTxLink: (hash: string) => string,
 ) => async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent
 
@@ -66,7 +68,7 @@ const getProtocolInteractionSparkLend = (
 
 	const slackMessages = preFilteredLogs
 		.filter(log => log && calculateDollarValueInCents(allAssetsDataForAllUsers[log.args.user][log.args.reserve], log.args.amount) > BigInt(dollarValueThreshold * 100)) // value bigger than $1.000.000 in cents
-		.map(log => log && `\`\`\`${slackMessagePrefix}${formatProtocolInteractionAlertMessage(log, txEvent, allAssetsDataForAllUsers[log.args.user])}\`\`\``) as string[]
+		.map(log => log && `\`\`\`${slackMessagePrefix}${formatProtocolInteractionAlertMessage(log, txEvent, allAssetsDataForAllUsers[log.args.user], createTxLink)}\`\`\``) as string[]
 
 	await sendMessagesToSlack(slackMessages, context, slackWebhookUrlSecret)
 }
@@ -75,6 +77,7 @@ const formatProtocolInteractionAlertMessage = (
 	log: LogDescription,
 	txEvent: TransactionEvent,
 	allAssetsData: AssetsData,
+	createTxLink: (hash: string) => string,
 ) => {
 	const title = formatInteractionName(log.name)
 	return `
@@ -86,7 +89,7 @@ ${getAddressAlias(log.args.user) == aliases.MAKER_CORE_D3M && allAssetsData[log.
 	? createD3MOutline(allAssetsData[log.args.reserve])
 	: createPositionOutlineForUser(allAssetsData)}
 
-${BigInt(txEvent.gasUsed) >= HIGH_GAS_TRANSACTION_THRESHOLD ? '⛽️🔥 HIGH GAS TRANSACTION ⛽️🔥\n' : ''}${createEtherscanTxLink(txEvent.hash)}`
+${BigInt(txEvent.gasUsed) >= HIGH_GAS_TRANSACTION_THRESHOLD ? '⛽️🔥 HIGH GAS TRANSACTION ⛽️🔥\n' : ''}${createTxLink(txEvent.hash)}`
 }
 
 const formatInteractionName = (name: string) => {
@@ -105,6 +108,7 @@ export const getProtocolInteractionSparkLendMainnet = getProtocolInteractionSpar
 	'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL',
 	1000000,
 	'',
+	createEtherscanTxLink
 )
 
 export const getProtocolInteractionSparkLendGnosis = getProtocolInteractionSparkLend(
@@ -115,4 +119,5 @@ export const getProtocolInteractionSparkLendGnosis = getProtocolInteractionSpark
 	'GNOSIS_SPARKLEND_ALERTS_SLACK_WEBHOOK_URL',
 	100000,
 	'🦉 GNOSIS CHAIN 🦉',
+	createGnosisscanTxLink
 )

@@ -1,1 +1,1 @@
-export const createEtherscanTxLink = (txHash: string) => `https://etherscan.io/tx/${txHash}`
+export const createEtherscanTxLink = (txHash: string): string => `https://etherscan.io/tx/${txHash}`
