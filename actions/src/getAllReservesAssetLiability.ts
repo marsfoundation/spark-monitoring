@@ -73,7 +73,7 @@ const getAllReservesAssetLiability = (
 			const totalValueMultiplier = valueIncreasePerSecond * elapsedTimeInSeconds + BigInt(10 ** 27)
 			console.log('Discrepancy multiplier: ', totalValueMultiplier)
 			MAX_DIFF = (
-				Number (300_000n * totalValueMultiplier / BigInt(10 ** 27))
+				Number (300_000n * totalValueMultiplier / BigInt(10 ** 19)) / 10 ** 8
 				+ maxDiff) * 10 ** 8
 			console.log('DAI max diff: ', MAX_DIFF)
 		}
