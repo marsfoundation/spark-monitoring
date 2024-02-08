@@ -47,8 +47,8 @@ const reconfigurationEventNames = [
 	'BorrowableInIsolationChanged',
 ]
 
-const SPARK_POOL_ADDRESS = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987" as const
-const AAVE_POOL_CONFIGURATOR_ADDRESS = "0x64b761D848206f447Fe2dd461b0c635Ec39EbB27" as const
+const SPARK_POOL_ADDRESS = '0xC13e21B648A5Ee794902342038FF3aDAB66BE987' as const
+const AAVE_POOL_CONFIGURATOR_ADDRESS = '0x64b761D848206f447Fe2dd461b0c635Ec39EbB27' as const
 
 export const getConfigurationChangeAave: ActionFn = async (context: Context, event: Event) => {
 	const transactionEvent = event as TransactionEvent
