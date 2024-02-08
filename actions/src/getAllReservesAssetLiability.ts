@@ -145,7 +145,7 @@ NOTE: USD diff derived from raw values, not from USD assets/liabilities.\`\`\``
 export const getAllReservesAssetLiabilitySparkLend = getAllReservesAssetLiability(
 	SPARKLEND_ORACLE,
 	SPARKLEND_HEALTH_CHECKER,
-	'ALERTS_IMPORTANT_SLACK_WEBHOOK_URL',
+	'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL',
 	1_000,
 	true,
 	true,
