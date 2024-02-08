@@ -6,6 +6,7 @@ import {
 
 import {
 	oracleAbi,
+	potAbi,
 	sparklendHealthCheckerAbi,
 } from './abis'
 
@@ -23,17 +24,21 @@ const SPARKLEND_HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B"
 const AAVE_ORACLE = "0x54586bE62E3c3580375aE3723C145253060Ca0C2"
 const AAVE_HEALTH_CHECKER = "0xB75927FbB797d4f568FF782d2B21911015dd52f3"
 
+const COOLDOWN_PERIOD = 250 as const
+
 const getAllReservesAssetLiability = (
 	oracleAddress: string,
 	healthCheckerAddress: string,
 	slackWebhookUrl: string,
 	maxDiff: number,
 	usePagerDuty: boolean,
+	useCustomDaiHandling: boolean,
 ) => async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent
 
-	const DAI = "0x6b175474e89094c44da98b954eedeac495271d0f"
-	const GHO = "0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f"
+	const DAI = '0x6b175474e89094c44da98b954eedeac495271d0f'
+	const GHO = '0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f'
+	const POT = '0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7'
 
 	const url = await context.secrets.get('ETH_RPC_URL')
 
@@ -58,8 +63,22 @@ const getAllReservesAssetLiability = (
 
 		let MAX_DIFF = maxDiff * 10 ** 8  // 1k USD diff to trigger alert
 
-		if (reserveInfo.reserve.toLowerCase() === DAI.toLowerCase()) {
-			MAX_DIFF = 300_000 * 10 ** 8
+		if (reserveInfo.reserve.toLowerCase() === DAI.toLowerCase() && useCustomDaiHandling) {
+			const approxTimestampOfCrossing300kDeviance = 1707348905428
+			console.log({approxTimestampOfCrossing300kDeviance})
+			const currentTimestamp = new Date().getTime()
+			console.log({currentTimestamp})
+			const elapsedTimeInSeconds = BigInt(Math.floor((currentTimestamp - approxTimestampOfCrossing300kDeviance) / 1000))
+			console.log({elapsedTimeInSeconds})
+			const dsr = await (new ethers.Contract(POT, potAbi, provider)).dsr()
+			console.log({dsr})
+			const valueIncreasePerSecond = dsr - BigInt(10 ** 27)
+			console.log({valueIncreasePerSecond})
+			const totalValueMultiplier = valueIncreasePerSecond * elapsedTimeInSeconds + BigInt(10 ** 27)
+			console.log({totalValueMultiplier})
+			MAX_DIFF = (
+				Number (300_000n * totalValueMultiplier / BigInt(10 ** 27))
+				+ maxDiff) * 10 ** 8
 		}
 
 		// Check that the absolute value of the difference is less than the max diff
@@ -67,7 +86,13 @@ const getAllReservesAssetLiability = (
 			continue  // COMMENT OUT FOR TESTING
 		}
 
-		messages.push(await formatAssetLiabilityAlertMessage({...reserveInfo, diff, usdDiff, price}, txEvent, provider))
+		const blockOfLastAlertForReserve = await context.storage.getNumber(`getAllReservesAssetLiability-${healthCheckerAddress}-${reserveInfo.reserve}`)
+		if (txEvent.blockNumber >= COOLDOWN_PERIOD + blockOfLastAlertForReserve) {
+			await context.storage.putNumber(`getAllReservesAssetLiability-${healthCheckerAddress}-${reserveInfo.reserve}`, txEvent.blockNumber)
+			messages.push(await formatAssetLiabilityAlertMessage({...reserveInfo, diff, usdDiff, price}, txEvent, provider))
+		} else {
+			console.log('Skipping alert (cooldown) for', reserveInfo.reserve)
+		}
 	}
 
 	if (messages.length === 0) return
@@ -126,6 +151,7 @@ export const getAllReservesAssetLiabilitySparkLend = getAllReservesAssetLiabilit
 	'ALERTS_IMPORTANT_SLACK_WEBHOOK_URL',
 	1_000,
 	true,
+	true,
 )
 
 export const getAllReservesAssetLiabilityAave = getAllReservesAssetLiability(
@@ -133,5 +159,6 @@ export const getAllReservesAssetLiabilityAave = getAllReservesAssetLiability(
 	AAVE_HEALTH_CHECKER,
 	'AAVE_ALERTS_SLACK_WEBHOOK_URL',
 	10_000,
+	false,
 	false,
 )
