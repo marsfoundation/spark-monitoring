@@ -65,20 +65,17 @@ const getAllReservesAssetLiability = (
 
 		if (reserveInfo.reserve.toLowerCase() === DAI.toLowerCase() && useCustomDaiHandling) {
 			const approxTimestampOfCrossing300kDeviance = 1707348905428
-			console.log({approxTimestampOfCrossing300kDeviance})
 			const currentTimestamp = new Date().getTime()
-			console.log({currentTimestamp})
 			const elapsedTimeInSeconds = BigInt(Math.floor((currentTimestamp - approxTimestampOfCrossing300kDeviance) / 1000))
-			console.log({elapsedTimeInSeconds})
 			const dsr = await (new ethers.Contract(POT, potAbi, provider)).dsr()
-			console.log({dsr})
+			console.log('DSR: ', Number(dsr))
 			const valueIncreasePerSecond = dsr - BigInt(10 ** 27)
-			console.log({valueIncreasePerSecond})
 			const totalValueMultiplier = valueIncreasePerSecond * elapsedTimeInSeconds + BigInt(10 ** 27)
-			console.log({totalValueMultiplier})
+			console.log('Discrepancy multiplier: ', totalValueMultiplier)
 			MAX_DIFF = (
 				Number (300_000n * totalValueMultiplier / BigInt(10 ** 27))
 				+ maxDiff) * 10 ** 8
+			console.log('DAI max diff: ', MAX_DIFF)
 		}
 
 		// Check that the absolute value of the difference is less than the max diff
