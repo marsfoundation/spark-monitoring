@@ -77,7 +77,7 @@ export const getConfigurationChangeAave: ActionFn = async (context: Context, eve
 
 	console.log(reconfigurationEventMessages)
 
-	await sendMessagesToSlack(reconfigurationEventMessages, context, 'AAVE_RECONFIGURATION_ALERT_SLACK_WEBHOOK_URL')
+	await sendMessagesToSlack(reconfigurationEventMessages, context, 'AAVE_ALERTS_SLACK_WEBHOOK_URL')
 }
 
 const formatConfigChangeMessage = (log: LogDescription, symbols: Record<string, string>) => {
