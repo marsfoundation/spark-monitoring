@@ -54,13 +54,29 @@ const getUserInfo = (
 
 	filteredLogs.forEach(log => {
 		const parsedLog = pool.interface.parseLog(log).args
-		if (parsedLog.user) {
-			users.push(parsedLog.user)
+		const userRelatedEventArgs = [
+			'user',
+			'onBehalfOf',
+			'target',
+			'initiator',
+			'liquidator',
+			'repayer',
+			'to',
+		]
+		for (const userType of userRelatedEventArgs) {
+			if (parsedLog[userType]) {
+				console.log(`Checking heath for ${parsedLog[userType]} (${userType})`)
+				users.push(parsedLog[userType])
+			}
 		}
 	})
 
+	console.log(`Checking heath for ${txEvent.from} (tx.from)`)
 	users.push(txEvent.from)
+
 	users = [...new Set(users)]  // Remove duplicates
+	console.log(`Final list of addresses to perform the check on:
+${users.join('\n')}`)
 
 	// 4. Get health of all users
 
@@ -77,7 +93,6 @@ const getUserInfo = (
 		}
 	}))
 
-	console.log({users})
 	console.log({userHealths})
 
 	// 5. Filter userHealths to only users below liquidation threshold, exit if none
