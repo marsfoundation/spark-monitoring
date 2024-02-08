@@ -23,7 +23,12 @@ const SPARKLEND_HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B"
 const AAVE_POOL = "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2"
 const AAVE_HEALTH_CHECKER = "0xB75927FbB797d4f568FF782d2B21911015dd52f3"
 
-const getUserInfo = (poolAddress: string, healthCheckerAddress: string, slackWebhookUrl: string) => async (context: Context, event: Event) => {
+const getUserInfo = (
+	poolAddress: string,
+	healthCheckerAddress: string,
+	slackWebhookUrl: string,
+	usePagerDuty: boolean,
+) => async (context: Context, event: Event) => {
 	let txEvent = event as TransactionEvent
 
 	// 1. Define contracts
@@ -98,7 +103,9 @@ const getUserInfo = (poolAddress: string, healthCheckerAddress: string, slackWeb
 
 	await sendMessagesToSlack(messages, context, slackWebhookUrl)
 
-	await sendMessagesToPagerDuty(messages, context)
+	if (usePagerDuty) {
+		await sendMessagesToPagerDuty(messages, context)
+	}
 }
 
 const formatUserHealthAlertMessage = (userHealth: any, txEvent: TransactionEvent) => {
@@ -132,10 +139,12 @@ export const getUserInfoSparkLend = getUserInfo(
 	SPARKLEND_POOL,
 	SPARKLEND_HEALTH_CHECKER,
 	'ALERTS_IMPORTANT_SLACK_WEBHOOK_URL',
+	true,
 )
 
 export const getUserInfoAave = getUserInfo(
 	AAVE_POOL,
 	AAVE_HEALTH_CHECKER,
 	'AAVE_ALERTS_SLACK_WEBHOOK_URL',
+	false,
 	)
