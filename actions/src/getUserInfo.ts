@@ -17,11 +17,11 @@ import {
 
 const ethers = require('ethers')
 
-const SPARKLEND_POOL = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987"
-const SPARKLEND_HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B"
+const SPARKLEND_POOL = '0xC13e21B648A5Ee794902342038FF3aDAB66BE987'
+const SPARKLEND_HEALTH_CHECKER = '0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B'
 
-const AAVE_POOL = "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2"
-const AAVE_HEALTH_CHECKER = "0xB75927FbB797d4f568FF782d2B21911015dd52f3"
+const AAVE_POOL = '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2'
+const AAVE_HEALTH_CHECKER = '0xB75927FbB797d4f568FF782d2B21911015dd52f3'
 
 const getUserInfo = (
 	poolAddress: string,
@@ -104,7 +104,7 @@ ${users.join('\n')}`)
 	})
 
 	if (usersBelowLT.length === 0) {
-		console.log("No users below liquidation threshold")
+		console.log('No users below liquidation threshold')
 		return
 	}
 
@@ -153,7 +153,7 @@ Health Factor:    ${formatBigInt(BigInt(userHealth.healthFactor), 18)}\`\`\``
 export const getUserInfoSparkLend = getUserInfo(
 	SPARKLEND_POOL,
 	SPARKLEND_HEALTH_CHECKER,
-	'ALERTS_IMPORTANT_SLACK_WEBHOOK_URL',
+	'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL',
 	true,
 )
 

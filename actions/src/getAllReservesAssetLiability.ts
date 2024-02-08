@@ -18,11 +18,11 @@ import {
 
 const ethers = require('ethers')
 
-const SPARKLEND_ORACLE = "0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9"
-const SPARKLEND_HEALTH_CHECKER = "0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B"
+const SPARKLEND_ORACLE = '0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9'
+const SPARKLEND_HEALTH_CHECKER = '0xfda082e00EF89185d9DB7E5DcD8c5505070F5A3B'
 
-const AAVE_ORACLE = "0x54586bE62E3c3580375aE3723C145253060Ca0C2"
-const AAVE_HEALTH_CHECKER = "0xB75927FbB797d4f568FF782d2B21911015dd52f3"
+const AAVE_ORACLE = '0x54586bE62E3c3580375aE3723C145253060Ca0C2'
+const AAVE_HEALTH_CHECKER = '0xB75927FbB797d4f568FF782d2B21911015dd52f3'
 
 const COOLDOWN_PERIOD = 250 as const
 
@@ -103,7 +103,7 @@ const getAllReservesAssetLiability = (
 
 const formatAssetLiabilityAlertMessage = async (reserveInfo: any, txEvent: any, provider: any) => {
 
-	const tokenAbi = ["function symbol() view returns (string)"]
+	const tokenAbi = ['function symbol() view returns (string)']
 
 	const token = new ethers.Contract(reserveInfo.reserve, tokenAbi, provider)
 
@@ -145,7 +145,7 @@ NOTE: USD diff derived from raw values, not from USD assets/liabilities.\`\`\``
 export const getAllReservesAssetLiabilitySparkLend = getAllReservesAssetLiability(
 	SPARKLEND_ORACLE,
 	SPARKLEND_HEALTH_CHECKER,
-	'ALERTS_IMPORTANT_SLACK_WEBHOOK_URL',
+	'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL',
 	1_000,
 	true,
 	true,
