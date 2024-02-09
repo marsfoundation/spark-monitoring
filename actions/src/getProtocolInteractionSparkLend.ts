@@ -106,7 +106,7 @@ export const getProtocolInteractionSparkLendMainnet = getProtocolInteractionSpar
 	'0xC13e21B648A5Ee794902342038FF3aDAB66BE987',
 	'0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9',
 	'SPARKLEND_INFO_SLACK_WEBHOOK_URL',
-	1000000,
+	5000000,
 	'',
 	createEtherscanTxLink
 )
