@@ -28,6 +28,7 @@ export const getAddressAlias = (address: string): string | null => {
         '0x28a55c4b4f9615fde3cdaddf6cc01fcf2e38a6b0': aliases['7_SIBLINGS'],
         '0xf8de75c7b95edb6f1e639751318f117663021cf0': aliases['7_SIBLINGS'],
         '0x741aa7cfb2c7bf2a1e7d4da2e3df6a56ca4131f3': aliases['7_SIBLINGS'],
+        '0x3a0dc3fc4b84e2427ced214c9ce858ea218e97d9': aliases['7_SIBLINGS'],
         '0x56aa33f20e25baa99e916c91abb4f59ae72491e0': aliases.ONETHOUSAN_ETH,
         '0x171c53d55b1bcb725f660677d9e8bad7fd084282': aliases.MONEYPRINTER1,
         '0x6967cef6ff12397c9c760e031b793153139f7a25': aliases.INSTADAPP,
