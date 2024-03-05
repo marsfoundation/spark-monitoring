@@ -122,3 +122,9 @@ actions:
           type: alert
           alert: {}
 
+      monitor-cap-automator-cap-updates:
+        description: Monitors supply and borrow cap updates executed through CapAutomator contract
+        function: src/getCapAutomatorUpdate:getCapAutomatorUpdate
+        trigger:
+          type: alert
+          alert: {}
