@@ -8,6 +8,7 @@ import {
 export const cleanTransactionRegistry: ActionFn = async (context: Context, event: Event) => {
     const blockEvent = event as BlockEvent
 
+    await removeStaleRecordsFromRegistry('getCapAutomatorUpdate', blockEvent, context)
     await removeStaleRecordsFromRegistry('getConfigurationChangeAave', blockEvent, context)
     await removeStaleRecordsFromRegistry('getHighGasTransaction', blockEvent, context)
     await removeStaleRecordsFromRegistry('getLiquidationSparkLend-mainnet', blockEvent, context)

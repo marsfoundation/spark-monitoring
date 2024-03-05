@@ -1,4 +1,5 @@
 export { default as ambBridgeExecutorAbi } from './ambBridgeExecutor.json'
+export { default as capAutomatorAbi } from './capAutomator.json'
 export { default as dsChiefAbi } from './dsChief.json'
 export { default as erc20Abi } from './erc20.json'
 export { default as oracleAbi } from './oracle.json'
