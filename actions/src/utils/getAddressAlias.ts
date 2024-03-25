@@ -7,6 +7,7 @@ export const aliases = {
     KARPATKEY:          'Karpatkey',
     MAKER_CORE_D3M:     'Maker Core D3M',
     MONEYPRINTER1:      'MoneyPrinter1',
+    NEXO:               'Nexo',
     NEXUS_MUTUAL:       'Nexus Mutual',
     ONETHOUSAN_ETH:     'onethousand.eth',
     PHOENIX_LABS:       'Phoenix Labs',
@@ -36,6 +37,7 @@ export const getAddressAlias = (address: string): string | null => {
         '0x9600a48ed0f931d0c422d574e3275a90d8b22745': aliases.INSTADAPP_LITE,
         '0xa7615cd307f323172331865181dc8b80a2834324': aliases.SAMYAK,
         '0x74ac14c85b2c338e6b9b5386138bd7a6f2f428c8': aliases.SUMMER_FI,
+        '0x43fC188f003e444e9e538189Fc675acDfB8f5d12': aliases.NEXO,
     } as Record<string, string>
 
     return aliasesRegistry[address.toLowerCase()] || null
