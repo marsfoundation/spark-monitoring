@@ -11,6 +11,7 @@ import {
 } from 'ethers'
 
 import {
+	capAutomatorAbi,
 	erc20Abi,
 	poolAbi,
 } from './abis'
@@ -34,7 +35,7 @@ export const getCapAutomatorUpdate: ActionFn = async (context: Context, event: E
 	const provider = await createMainnetProvider(context)
 
 	const sparkPool = new Contract(SPARK_POOL_ADDRESS, poolAbi, provider)
-	const capAutomator = new Contract(CAP_AUTOMATOR_ADDRESS, poolAbi, provider)
+	const capAutomator = new Contract(CAP_AUTOMATOR_ADDRESS, capAutomatorAbi, provider)
 
     const sparkAssets = await sparkPool.getReservesList() as string[]
 	const symbols: Record<string, string> = (await Promise.all(sparkAssets.map(async asset => await new Contract(asset, erc20Abi, provider).symbol())))
@@ -60,5 +61,5 @@ const formatAutomatedCapUpdateMessage = (log: LogDescription, symbols: Record<st
         ? `🏛️📉 ${symbols[log.args[0]]} ${log.name.slice(6, 12).toUpperCase()} CAP DECREASED 🏛️📉`
         : `🏛️📈 ${symbols[log.args[0]]} ${log.name.slice(6, 12).toUpperCase()} CAP INCREASED 🏛️📈`
 
-    return `${title}\nOLD CAP: ${formatBigInt(log.args[1], 0).slice(0, -2)}\nNEW CAP: ${formatBigInt(log.args[2], 0).slice(0, -2)}`
+    return `${title}\n\nOLD CAP: ${formatBigInt(log.args[1], 0).slice(0, -2)}\nNEW CAP: ${formatBigInt(log.args[2], 0).slice(0, -2)}\n`
 }
