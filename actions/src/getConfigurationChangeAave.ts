@@ -11,6 +11,7 @@ import {
 } from 'ethers'
 
 import {
+	aaveOracleAbi,
 	erc20Abi,
 	poolAbi,
 	poolConfiguratorAbi,
@@ -49,6 +50,7 @@ const reconfigurationEventNames = [
 
 const SPARK_POOL_ADDRESS = '0xC13e21B648A5Ee794902342038FF3aDAB66BE987' as const
 const AAVE_POOL_CONFIGURATOR_ADDRESS = '0x64b761D848206f447Fe2dd461b0c635Ec39EbB27' as const
+const AAVE_ORACLE_ADDRESS = '0x54586bE62E3c3580375aE3723C145253060Ca0C2' as const
 
 export const getConfigurationChangeAave: ActionFn = async (context: Context, event: Event) => {
 	const transactionEvent = event as TransactionEvent
@@ -59,6 +61,7 @@ export const getConfigurationChangeAave: ActionFn = async (context: Context, eve
 
 	const sparkPool = new Contract(SPARK_POOL_ADDRESS, poolAbi, provider)
 	const aavePoolConfigurator = new Contract(AAVE_POOL_CONFIGURATOR_ADDRESS, poolConfiguratorAbi, provider)
+	const aaveOracle = new Contract(AAVE_ORACLE_ADDRESS, aaveOracleAbi, provider)
 
 	const sparkAssets = await sparkPool.getReservesList() as string[]
 	const symbols: Record<string, string> = (await Promise.all(sparkAssets.map(async asset => await new Contract(asset, erc20Abi, provider).symbol())))
@@ -68,12 +71,19 @@ export const getConfigurationChangeAave: ActionFn = async (context: Context, eve
 		}), {})
 
 
-	const reconfigurationEventMessages = transactionEvent.logs
+	const reconfigurationEvents = transactionEvent.logs
 		.map(log => aavePoolConfigurator.interface.parseLog(log))
 		.filter(log => log && reconfigurationEventNames.includes(log.name))
 		.filter(log => log && (sparkAssets.includes(log.args.asset) || log.args.asset == undefined))
+
+	const assetSourceUpdatedEvents = transactionEvent.logs
+		.map(log => aaveOracle.interface.parseLog(log))
+		.filter(log => log && log.name === 'AssetSourceUpdated')
+		.filter(log => log && (sparkAssets.includes(log.args.asset) || log.args.asset == undefined))
+
+	const reconfigurationEventMessages = [...reconfigurationEvents, ...assetSourceUpdatedEvents]
 		.map(log => log && formatConfigChangeMessage(log, symbols))
-		.map(message => `\`\`\`${message}\n${createEtherscanTxLink(transactionEvent.hash)}\`\`\``)
+		.map(message => `\`\`\`${message}\n\n${createEtherscanTxLink(transactionEvent.hash)}\`\`\``)
 
 	console.log(reconfigurationEventMessages)
 
@@ -81,7 +91,7 @@ export const getConfigurationChangeAave: ActionFn = async (context: Context, eve
 }
 
 const formatConfigChangeMessage = (log: LogDescription, symbols: Record<string, string>) => {
-	return`👻 ${log.name} 👻${Object.keys(log.args).map((_, index) => (formatArgOutput(log, index, symbols))).join('')}`
+	return`👻 ${log.name} 👻\n${Object.keys(log.args).map((_, index) => (formatArgOutput(log, index, symbols))).join('')}`
 }
 
 const formatArgOutput = (log: LogDescription, argIndex: number, symbols: Record<string, string>) => {
