@@ -128,3 +128,12 @@ actions:
         trigger:
           type: alert
           alert: {}
+
+      monitor-pot-dsr-data-sync:
+        description: Monitors whether AuthDsrOracle data is in sync with Pot
+        function: src/getPotDsrDataSync:getPotDsrDataSync
+        trigger:
+          type: periodic
+          periodic:
+            interval: 10m
+
