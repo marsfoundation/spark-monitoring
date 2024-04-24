@@ -38,7 +38,6 @@ const LIDO_WSTETH = '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0' as const
 const ROCKET_RETH = '0xae78736Cd615f374D3085123A210448E74Fc6393' as const
 
 const DEFAULT_ORACLE_DEVIANCE_THRESHOLD = 750 as const
-const GNO_ORACLE_DEVIANCE_THRESHOLD = 1500 as const
 const DERIVATIVE_DEVIANCE_THRESHOLD = 500 as const
 const WBTC_BTC_DEVIANCE_THRESHOLD = 500 as const
 
@@ -52,14 +51,14 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 	const oracle = new Contract(SPARKLEND_ORACLE, oracleAbi, provider)
 
 	const sparkAssets = await sparkPool.getReservesList() as string[]
-	const sparkAssetSymbols = (await Promise.all(sparkAssets.map(async asset => await new Contract(asset, erc20Abi, provider).symbol()))) as string[]
+	const sparkAssetSymbols = (await Promise.all(sparkAssets.map(async asset => await new Contract(asset, erc20Abi, provider).symbol())))
+		.filter(symbol => symbol !== 'GNO') as string[]  // Remove GNO from tracked asset list
 
 	const oraclePrices = (await Promise.all(sparkAssets.map(async (asset, index) => {return {[`${sparkAssetSymbols[index]}`]: await oracle.getAssetPrice(asset)}})))
 	.reduce((acc, curr) => { return { ...acc, ...curr }}, {})
 
 
 	const coingeckoCoinIds: Record<string, string> = {
-		'GNO': 'gnosis',
 		'sDAI': 'savings-dai',
 		'rETH': 'rocket-pool-eth',
 		'USDC': 'usd-coin',
@@ -90,10 +89,9 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 		console.log(`${assetSymbol} - off-chain price: ${offChainPrices[assetSymbol].toString()} - oracle price: ${oraclePrices[assetSymbol].toString()} - deviance: ${deviancePercentage}%`)
 
 		const blockOfLastAlertForAsset = await context.storage.getNumber(`getAssetPriceDeviance-oracle-vs-off-chain-${assetSymbol}`)
-		const oracleDevianceThreshold = assetSymbol == 'GNO' ? GNO_ORACLE_DEVIANCE_THRESHOLD : DEFAULT_ORACLE_DEVIANCE_THRESHOLD  // modify this to test alerts triggers
 
 		if (
-			devianceInBasisPoints >= oracleDevianceThreshold
+			devianceInBasisPoints >= DEFAULT_ORACLE_DEVIANCE_THRESHOLD
 			&& blockEvent.blockNumber >= COOLDOWN_PERIOD + blockOfLastAlertForAsset
 		) {
 			await context.storage.putNumber(`getAssetPriceDeviance-oracle-vs-off-chain-${assetSymbol}`, blockEvent.blockNumber)
