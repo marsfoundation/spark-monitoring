@@ -36,8 +36,11 @@ export const getPotDsrDataSync: ActionFn = async (context: Context, event: Event
     const [ baseDsr ] = await baseDsrAuthOracle.getPotData()
     console.log({baseDsr})
 
-    mainnetDsr != optimismDsr && await handleDsrDiscrepancy('Optimism',mainnetDsr, optimismDsr, periodicEvent, context)
-    mainnetDsr != baseDsr && await handleDsrDiscrepancy('Base',mainnetDsr, baseDsr, periodicEvent, context)
+    mainnetDsr != optimismDsr && await handleDsrDiscrepancy('Optimism', mainnetDsr, optimismDsr, periodicEvent, context)
+    mainnetDsr != baseDsr && await handleDsrDiscrepancy('Base', mainnetDsr, baseDsr, periodicEvent, context)
+
+    await cleanUpStaleDiscrepancyRecord('Optimism', periodicEvent, context)
+    await cleanUpStaleDiscrepancyRecord('Base', periodicEvent, context)
 }
 
 const handleDsrDiscrepancy = async (
@@ -56,6 +59,10 @@ const handleDsrDiscrepancy = async (
     }
 
     if (periodicEvent.time.getTime() - lastDiscrepancyReportTime > DISCREPANCY_TIME_THRESHOLD) {
+
+    }
+
+    if (periodicEvent.time.getTime() - lastDiscrepancyReportTime > DISCREPANCY_TIME_THRESHOLD) {
         console.log(`Sending an alert about ${domainName} DSR discrepancy`)
         await context.storage.delete(`getPotDsrDataSync-${domainName}`)
         await sendMessagesToSlack([`\`\`\`
@@ -63,5 +70,18 @@ const handleDsrDiscrepancy = async (
 
 🏛️ Mainnet DSR: ${mainnetDsr.toString()}
 🔮 ${domainName} DSR: ${foreignDsr.toString()}\`\`\``], context, 'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL')
+    }
+}
+
+const cleanUpStaleDiscrepancyRecord = async (
+    domainName: string,
+    periodicEvent: PeriodicEvent,
+    context: Context,
+) => {
+    const lastDiscrepancyReportTime = await context.storage.getNumber(`getPotDsrDataSync-${domainName}`) || 0
+
+    if (lastDiscrepancyReportTime && periodicEvent.time.getTime() - lastDiscrepancyReportTime > 5 * DISCREPANCY_TIME_THRESHOLD) {
+        console.log(`Cleaning the record of ${domainName} DSR discrepancy`)
+        await context.storage.delete(`getPotDsrDataSync-${domainName}`)
     }
 }
