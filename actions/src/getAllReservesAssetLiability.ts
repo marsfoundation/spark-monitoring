@@ -6,7 +6,6 @@ import {
 
 import {
 	oracleAbi,
-	potAbi,
 	sparklendHealthCheckerAbi,
 } from './abis'
 
@@ -38,7 +37,6 @@ const getAllReservesAssetLiability = (
 
 	const DAI = '0x6b175474e89094c44da98b954eedeac495271d0f'
 	const GHO = '0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f'
-	const POT = '0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7'
 
 	const url = await context.secrets.get('ETH_RPC_URL')
 
@@ -64,17 +62,7 @@ const getAllReservesAssetLiability = (
 		let MAX_DIFF = maxDiff * 10 ** 8  // 1k USD diff to trigger alert
 
 		if (reserveInfo.reserve.toLowerCase() === DAI.toLowerCase() && useCustomDaiHandling) {
-			const approxTimestampOfCrossing300kDeviance = 1707348905428
-			const currentTimestamp = new Date().getTime()
-			const elapsedTimeInSeconds = BigInt(Math.floor((currentTimestamp - approxTimestampOfCrossing300kDeviance) / 1000))
-			const dsr = await (new ethers.Contract(POT, potAbi, provider)).dsr()
-			console.log('DSR: ', Number(dsr))
-			const valueIncreasePerSecond = dsr - BigInt(10 ** 27)
-			const totalValueMultiplier = valueIncreasePerSecond * elapsedTimeInSeconds + BigInt(10 ** 27)
-			console.log('Discrepancy multiplier: ', totalValueMultiplier)
-			MAX_DIFF = (
-				Number (300_000n * totalValueMultiplier / BigInt(10 ** 19)) / 10 ** 8
-				+ maxDiff) * 10 ** 8
+			MAX_DIFF = 2_000_000 * 10 ** 8
 			console.log('DAI max diff: ', MAX_DIFF)
 		}
 
