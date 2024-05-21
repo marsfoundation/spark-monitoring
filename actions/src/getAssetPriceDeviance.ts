@@ -36,6 +36,7 @@ const SPARKLEND_ORACLE = '0x8105f69D9C41644c6A0803fDA7D03Aa70996cFD9' as const
 const MAKER_POT = '0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7' as const
 const LIDO_WSTETH = '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0' as const
 const ROCKET_RETH = '0xae78736Cd615f374D3085123A210448E74Fc6393' as const
+const GNO = '0x6810e776880C02933D47DB1b9fc05908e5386b96' as const
 
 const DEFAULT_ORACLE_DEVIANCE_THRESHOLD = 750 as const
 const DERIVATIVE_DEVIANCE_THRESHOLD = 500 as const
@@ -50,13 +51,13 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 	const sparkPool = new Contract(SPARKLEND_POOL, poolAbi, provider)
 	const oracle = new Contract(SPARKLEND_ORACLE, oracleAbi, provider)
 
-	const sparkAssets = await sparkPool.getReservesList() as string[]
+	const sparkAssets = (await sparkPool.getReservesList() as string[])
+		.filter(assetAddress => assetAddress.toLowerCase() !== GNO.toLowerCase())  // Remove GNO from tracked asset list
+
 	const sparkAssetSymbols = (await Promise.all(sparkAssets.map(async asset => await new Contract(asset, erc20Abi, provider).symbol())))
-		.filter(symbol => symbol !== 'GNO') as string[]  // Remove GNO from tracked asset list
 
 	const oraclePrices = (await Promise.all(sparkAssets.map(async (asset, index) => {return {[`${sparkAssetSymbols[index]}`]: await oracle.getAssetPrice(asset)}})))
-	.reduce((acc, curr) => { return { ...acc, ...curr }}, {})
-
+		.reduce((acc, curr) => { return { ...acc, ...curr }}, {})
 
 	const coingeckoCoinIds: Record<string, string> = {
 		'sDAI': 'savings-dai',
