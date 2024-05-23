@@ -91,14 +91,24 @@ actions:
           type: alert
           alert: {}
 
-      clean-transaction-registry:
+      clean-transaction-registry-mainnet:
         description: Keeps size of the storage in check, by removing transactions older than 100 blocks from the registry.
-        function: src/cleanTransactionRegistry:cleanTransactionRegistry
+        function: src/cleanTransactionRegistry:cleanTransactionRegistryMainnet
         trigger:
           type: block
           block:
             network:
               - 1
+            blocks: 100
+
+      clean-transaction-registry-gnosis:
+        description: Keeps size of the storage in check, by removing transactions older than 100 blocks from the registry.
+        function: src/cleanTransactionRegistry:cleanTransactionRegistryGnosis
+        trigger:
+          type: block
+          block:
+            network:
+              - 100
             blocks: 100
 
       monitor-lift-on-dschief:

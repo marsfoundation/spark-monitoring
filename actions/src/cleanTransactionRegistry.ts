@@ -1,20 +1,15 @@
 import {
-	ActionFn,
 	BlockEvent,
 	Context,
 	Event,
 } from '@tenderly/actions'
 
-export const cleanTransactionRegistry: ActionFn = async (context: Context, event: Event) => {
+export const cleanTransactionRegistry = (actionNames: Array<string>) => async (context: Context, event: Event) => {
     const blockEvent = event as BlockEvent
 
-    await removeStaleRecordsFromRegistry('getCapAutomatorUpdate', blockEvent, context)
-    await removeStaleRecordsFromRegistry('getConfigurationChangeAave', blockEvent, context)
-    await removeStaleRecordsFromRegistry('getHighGasTransaction', blockEvent, context)
-    await removeStaleRecordsFromRegistry('getLiquidationSparkLend-mainnet', blockEvent, context)
-    await removeStaleRecordsFromRegistry('getLiquidationSparkLend-gnosis', blockEvent, context)
-    await removeStaleRecordsFromRegistry('getProtocolInteractionSparklend-mainnet', blockEvent, context)
-    await removeStaleRecordsFromRegistry('getProtocolInteractionSparklend-gnosis', blockEvent, context)
+    for (const actionName of actionNames) {
+        await removeStaleRecordsFromRegistry(actionName, blockEvent, context)
+    }
 }
 
 const removeStaleRecordsFromRegistry = async (actionName: string, blockEvent: BlockEvent, context: Context) => {
@@ -31,3 +26,16 @@ const removeStaleRecordsFromRegistry = async (actionName: string, blockEvent: Bl
         return updatedRegistry
     }, {} as Record<string, number>))
 }
+
+export const cleanTransactionRegistryMainnet = cleanTransactionRegistry([
+    'getCapAutomatorUpdate',
+    'getConfigurationChangeAave',
+    'getHighGasTransaction',
+    'getLiquidationSparkLend-mainnet',
+    'getProtocolInteractionSparklend-mainnet',
+])
+
+export const cleanTransactionRegistryGnosis = cleanTransactionRegistry([
+    'getLiquidationSparkLend-gnosis',
+    'getProtocolInteractionSparklend-gnosis',
+])
