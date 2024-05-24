@@ -26,7 +26,7 @@ export const getPotDsrDataSync: ActionFn = async (context: Context, event: Event
     const base = await createProvider(context, 'BASE_RPC_URL')
     const arbitrum = await createProvider(context, 'ARBITRUM_RPC_URL')
 
-	const pot = new Contract(MAKER_POT, potAbi, mainnet)
+    const pot = new Contract(MAKER_POT, potAbi, mainnet)
     const optimismDsrAuthOracle = new Contract(OPTIMISM_DSR_AUTH_ORACLE, dsrAuthOracleAbi, optimism)
     const baseDsrAuthOracle = new Contract(BASE_DSR_AUTH_ORACLE, dsrAuthOracleAbi, base)
     const arbitrumDsrAuthOracle = new Contract(ARBITRUM_DSR_AUTH_ORACLE, dsrAuthOracleAbi, arbitrum)
