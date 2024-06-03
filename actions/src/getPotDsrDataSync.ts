@@ -66,10 +66,6 @@ const handleDsrDiscrepancy = async (
     }
 
     if (periodicEvent.time.getTime() - lastDiscrepancyReportTime > DISCREPANCY_TIME_THRESHOLD) {
-
-    }
-
-    if (periodicEvent.time.getTime() - lastDiscrepancyReportTime > DISCREPANCY_TIME_THRESHOLD) {
         console.log(`Sending an alert about ${domainName} DSR discrepancy`)
         await context.storage.delete(`getPotDsrDataSync-${domainName}`)
         await sendMessagesToSlack([`\`\`\`
