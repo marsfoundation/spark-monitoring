@@ -1,0 +1,133 @@
+import {
+    ActionFn,
+    Context,
+    Event,
+    PeriodicEvent
+} from '@tenderly/actions'
+
+import { Contract } from 'ethers'
+
+import { oracleAbi, killSwitchOracleAbi, multicallAbi } from './abis'
+
+import { createMainnetProvider, createProvider, sendMessagesToSlack } from './utils'
+
+const MULTICALL = '0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7' as const
+const KILL_SWITCH_ORACLE = '0x33a3aB524A43E69f30bFd9Ae97d1Ec679FF00B64' as const
+
+const DISCREPANCY_TIME_THRESHOLD = 3_600_000 as const  // 1 hour in milliseconds
+
+export const getPotDsrDataSync: ActionFn = async (context: Context, event: Event) => {
+    const periodicEvent = event as PeriodicEvent
+
+    const provider = await createMainnetProvider(context)
+
+    const multicall = new Contract(MULTICALL, multicallAbi, provider)
+    const killSwitchOracle = new Contract(KILL_SWITCH_ORACLE, killSwitchOracleAbi, provider)
+
+    const oracleAddresses = await killSwitchOracle.oracles()
+
+    let multicallCalls: Array<{ target: string; callData: string }> = []
+
+    for (const oracleAddress of oracleAddresses) {
+        const oracle = new Contract(oracleAddress, oracleAbi, provider)
+        multicallCalls = [
+            ...multicallCalls,
+            ...[
+                {
+                    target: oracleAddress,
+                    callData: oracle.interface.encodeFunctionData('latestAnswer'),
+                },
+                {
+                    target: KILL_SWITCH_ORACLE,
+                    callData: killSwitchOracle.interface.encodeFunctionData('oracleThresholds', [oracleAddress]),
+                }
+            ],
+        ]
+    }
+
+    let multicallResults = (await multicall.aggregate(multicallCalls)).returnData
+
+    for (const oracleAddress of oracleAddresses) {
+        const oracle = new Contract(oracleAddress, oracleAbi, provider)
+
+        const latestAnswer = BigInt(
+            oracle.interface.decodeFunctionResult('latestAnswer', multicallResults[0])[0].toString(),
+        )
+        const threshold = BigInt(
+            killSwitchOracle.interface.decodeFunctionResult('oracleThresholds', multicallResults[1])[0].toString(),
+        )
+
+        multicallResults = multicallResults.slice()
+
+        if (latestAnswer > 0 && latestAnswer <= threshold) {
+            // SEND ALERT
+        }
+    }
+
+
+    const optimism = await createProvider(context, 'OPTIMISM_RPC_URL')
+    const base = await createProvider(context, 'BASE_RPC_URL')
+    const arbitrum = await createProvider(context, 'ARBITRUM_RPC_URL')
+
+    const pot = new Contract(MAKER_POT, potAbi, mainnet)
+    const optimismDsrAuthOracle = new Contract(OPTIMISM_DSR_AUTH_ORACLE, dsrAuthOracleAbi, optimism)
+    const baseDsrAuthOracle = new Contract(BASE_DSR_AUTH_ORACLE, dsrAuthOracleAbi, base)
+    const arbitrumDsrAuthOracle = new Contract(ARBITRUM_DSR_AUTH_ORACLE, dsrAuthOracleAbi, arbitrum)
+
+    const mainnetDsr = await pot.dsr()
+    console.log({mainnetDsr})
+
+    const [ optimismDsr ] = await optimismDsrAuthOracle.getPotData()
+    console.log({optimismDsr})
+    const [ baseDsr ] = await baseDsrAuthOracle.getPotData()
+    console.log({baseDsr})
+    const [ arbitrumDsr ] = await arbitrumDsrAuthOracle.getPotData()
+    console.log({arbitrumDsr})
+
+    mainnetDsr != optimismDsr && await handleDsrDiscrepancy('Optimism', mainnetDsr, optimismDsr, periodicEvent, context)
+    mainnetDsr != baseDsr && await handleDsrDiscrepancy('Base', mainnetDsr, baseDsr, periodicEvent, context)
+    mainnetDsr != arbitrumDsr && await handleDsrDiscrepancy('Arbitrum', mainnetDsr, arbitrumDsr, periodicEvent, context)
+
+    await cleanUpStaleDiscrepancyRecord('Optimism', periodicEvent, context)
+    await cleanUpStaleDiscrepancyRecord('Base', periodicEvent, context)
+    await cleanUpStaleDiscrepancyRecord('Arbitrum', periodicEvent, context)
+}
+
+const handleDsrDiscrepancy = async (
+    domainName: string,
+    mainnetDsr: bigint,
+    foreignDsr: bigint,
+    periodicEvent: PeriodicEvent,
+    context: Context,
+) => {
+    const lastDiscrepancyReportTime = await context.storage.getNumber(`getPotDsrDataSync-${domainName}`) || 0
+    console.log(`Discrepancy observed on ${domainName}`)
+
+    if (lastDiscrepancyReportTime == 0) {
+        await context.storage.putNumber(`getPotDsrDataSync-${domainName}`, periodicEvent.time.getTime())
+        return
+    }
+
+    if (periodicEvent.time.getTime() - lastDiscrepancyReportTime > DISCREPANCY_TIME_THRESHOLD) {
+        console.log(`Sending an alert about ${domainName} DSR discrepancy`)
+        await context.storage.delete(`getPotDsrDataSync-${domainName}`)
+        await sendMessagesToSlack([`\`\`\`
+🚨🔮🏛️ DSR ORACLE DISCREPANCY (${domainName.toUpperCase()}) 🚨🔮🏛️
+
+🏛️ Mainnet DSR: ${mainnetDsr.toString()}
+🔮 ${domainName} DSR: ${foreignDsr.toString()}\`\`\``], context, 'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL')
+    }
+}
+
+const cleanUpStaleDiscrepancyRecord = async (
+    domainName: string,
+    periodicEvent: PeriodicEvent,
+    context: Context,
+) => {
+    const lastDiscrepancyReportTime = await context.storage.getNumber(`getPotDsrDataSync-${domainName}`) || 0
+
+    if (lastDiscrepancyReportTime && periodicEvent.time.getTime() - lastDiscrepancyReportTime > 5 * DISCREPANCY_TIME_THRESHOLD) {
+        console.log(`Cleaning the record of ${domainName} DSR discrepancy`)
+        await context.storage.delete(`getPotDsrDataSync-${domainName}`)
+    }
+}
