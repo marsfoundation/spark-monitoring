@@ -6,7 +6,7 @@ import {
 
 import { Contract } from 'ethers'
 
-import { oracleAbi, killSwitchOracleAbi, multicallAbi } from './abis'
+import { priceSourceAbi, killSwitchOracleAbi, multicallAbi } from './abis'
 
 import { createMainnetProvider, sendMessagesToSlack } from './utils'
 
@@ -25,7 +25,7 @@ export const getKillSwitchOraclesState: ActionFn = async (context: Context, _: E
     let multicallCalls: Array<{ target: string; callData: string }> = []
 
     for (const oracleAddress of oracleAddresses) {
-        const oracle = new Contract(oracleAddress, oracleAbi, provider)
+        const oracle = new Contract(oracleAddress, priceSourceAbi, provider)
         multicallCalls = [
             ...multicallCalls,
             ...[
@@ -41,10 +41,12 @@ export const getKillSwitchOraclesState: ActionFn = async (context: Context, _: E
         ]
     }
 
-    let multicallResults = (await multicall.aggregate(multicallCalls)).returnData
+    let multicallResults = (await multicall.aggregate.staticCall(multicallCalls)).returnData
+
+    console.log(multicallResults)
 
     for (const oracleAddress of oracleAddresses) {
-        const oracle = new Contract(oracleAddress, oracleAbi, provider)
+        const oracle = new Contract(oracleAddress, priceSourceAbi, provider)
 
         const latestAnswer = BigInt(
             oracle.interface.decodeFunctionResult('latestAnswer', multicallResults[0])[0].toString(),
@@ -62,7 +64,6 @@ export const getKillSwitchOraclesState: ActionFn = async (context: Context, _: E
   Latest Answer: ${latestAnswer.toString()}
   Threshold:     ${threshold.toString()}\`\`\``]
 
-        console.log(messages)
         if (latestAnswer > 0 && latestAnswer <= threshold) {
             await sendMessagesToSlack(messages, context, 'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL')
         }
