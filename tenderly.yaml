@@ -143,9 +143,11 @@ actions:
         description: Monitors whether AuthDsrOracle data is in sync with Pot
         function: src/getPotDsrDataSync:getPotDsrDataSync
         trigger:
-          type: periodic
-          periodic:
-            interval: 1m
+          type: block
+          block:
+            network:
+              - 1
+            blocks: 5
 
       monitor-kill-switch-oracle:
         description: Monitors whether kill switch oracle should be triggered
