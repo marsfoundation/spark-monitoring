@@ -53,7 +53,7 @@ export const getKillSwitchOraclesState: ActionFn = async (context: Context, _: E
             killSwitchOracle.interface.decodeFunctionResult('oracleThresholds', multicallResults[1])[0].toString(),
         )
 
-        multicallResults = multicallResults.slice()
+        multicallResults = multicallResults.slice(2)
 
         const messages = [`\`\`\`
 🚨🕹️💀 KILL SWITCH ORACLE THRESHOLD VIOLATION 🚨🕹️💀
