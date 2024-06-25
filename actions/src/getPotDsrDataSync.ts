@@ -44,10 +44,6 @@ export const getPotDsrDataSync: ActionFn = async (context: Context, event: Event
     mainnetDsr != optimismDsr && await handleDsrDiscrepancy('Optimism', mainnetDsr, optimismDsr, periodicEvent, context)
     mainnetDsr != baseDsr && await handleDsrDiscrepancy('Base', mainnetDsr, baseDsr, periodicEvent, context)
     mainnetDsr != arbitrumDsr && await handleDsrDiscrepancy('Arbitrum', mainnetDsr, arbitrumDsr, periodicEvent, context)
-
-    await cleanUpStaleDiscrepancyRecord('Optimism', periodicEvent, context)
-    await cleanUpStaleDiscrepancyRecord('Base', periodicEvent, context)
-    await cleanUpStaleDiscrepancyRecord('Arbitrum', periodicEvent, context)
 }
 
 const handleDsrDiscrepancy = async (
@@ -80,17 +76,4 @@ const handleDsrDiscrepancy = async (
     }
 
     await sendMessagesToSlack(messages, context, 'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL')
-}
-
-const cleanUpStaleDiscrepancyRecord = async (
-    domainName: string,
-    periodicEvent: PeriodicEvent,
-    context: Context,
-) => {
-    const lastDiscrepancyReportTime = await context.storage.getNumber(`getPotDsrDataSync-${domainName}`) || 0
-
-    if (lastDiscrepancyReportTime && periodicEvent.time.getTime() - lastDiscrepancyReportTime > 5 * DISCREPANCY_TIME_THRESHOLD) {
-        console.log(`Cleaning the record of ${domainName} DSR discrepancy`)
-        await context.storage.delete(`getPotDsrDataSync-${domainName}`)
-    }
 }
