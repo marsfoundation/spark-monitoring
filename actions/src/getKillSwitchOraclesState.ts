@@ -10,8 +10,8 @@ import { oracleAbi, killSwitchOracleAbi, multicallAbi } from './abis'
 
 import { createMainnetProvider, sendMessagesToSlack } from './utils'
 
-const MULTICALL = '0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7' as const
-const KILL_SWITCH_ORACLE = '0x33a3aB524A43E69f30bFd9Ae97d1Ec679FF00B64' as const
+const MULTICALL = '0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441' as const
+const KILL_SWITCH_ORACLE = '0x909A86f78e1cdEd68F9c2Fe2c9CD922c401abe82' as const
 
 export const getKillSwitchOraclesState: ActionFn = async (context: Context, _: Event) => {
 
