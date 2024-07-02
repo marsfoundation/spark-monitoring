@@ -149,6 +149,16 @@ actions:
               - 1
             blocks: 5
 
+      monitor-not-executed-spells:
+        description: Monitors whether there are spells ready to execute
+        function: src/getSpellsReadyToExecute:getSpellsReadyToExecuteGnosis
+        trigger:
+          type: block
+          block:
+            network:
+              - 1
+            blocks: 5
+
       monitor-kill-switch-oracle:
         description: Monitors whether kill switch oracle should be triggered
         function: src/getKillSwitchOraclesState:getKillSwitchOraclesState
