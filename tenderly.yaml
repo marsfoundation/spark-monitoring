@@ -149,3 +149,13 @@ actions:
               - 1
             blocks: 5
 
+      monitor-not-executed-spells:
+        description: Monitors whether there are spells ready to execute
+        function: src/getSpellsReadyToExecute:getSpellsReadyToExecuteGnosis
+        trigger:
+          type: block
+          block:
+            network:
+              - 1
+            blocks: 5
+
