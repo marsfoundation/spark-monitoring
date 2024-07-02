@@ -41,7 +41,7 @@ export const getGnosisExecutorOperations: ActionFn = async (context: Context, ev
 🏛️🦉 Queue called on Gnosis Executor 🏛️🦉
 
 🪄 Spell${log?.args.targets.length > 1 ? 's:' : ': '}         ${log?.args.targets.join(', ')}
-⏳ Execution time: ${new Date(Number(log?.args.executionTime)).toUTCString()}
+⏳ Execution time: ${new Date(Number(log?.args.executionTime) * 1000).toUTCString()}
 
 ${createGnosisscanTxLink(transactionEvent.hash)}\`\`\``)
     }
