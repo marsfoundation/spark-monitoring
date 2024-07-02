@@ -1,5 +1,6 @@
 export const aliases = {
     '7_SIBLINGS':       '7 Siblings',
+    ABRAXAS:            'Abraxas',
     ANTALPHA:           'Antalpha',
     CZSAMSUNSB_ETH:     'czsamsunsb.eth',
     F2POOL:             'F2Pool',
@@ -38,6 +39,7 @@ export const getAddressAlias = (address: string): string | null => {
         '0xa7615cd307f323172331865181dc8b80a2834324': aliases.SAMYAK,
         '0x74ac14c85b2c338e6b9b5386138bd7a6f2f428c8': aliases.SUMMER_FI,
         '0x43fC188f003e444e9e538189Fc675acDfB8f5d12': aliases.NEXO,
+        '0xEd0C6079229E2d407672a117c22b62064f4a4312': aliases.ABRAXAS
     } as Record<string, string>
 
     return aliasesRegistry[address.toLowerCase()] || null
