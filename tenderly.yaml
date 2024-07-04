@@ -82,7 +82,7 @@ actions:
           block:
             network:
               - 1
-            blocks: 5
+            blocks: 10
 
       monitor-high-transaction-gas:
         description: Monitors transactions and alerts on high gas transactions
