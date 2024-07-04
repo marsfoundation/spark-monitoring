@@ -69,6 +69,7 @@ export const getAssetPriceDeviance: ActionFn = async (context: Context, event: E
 		'USDT': 'tether',
 		'DAI': 'dai',
 		'WETH': 'weth',
+		'weETH': 'wrapped-eeth',
 	}
 	const nonSparkAssetsToTrack = ['BTC']
 	const coingeckoCallResult = await axios
