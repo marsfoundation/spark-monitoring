@@ -72,8 +72,8 @@ const handleDsrDiscrepancy = async (
     if (lastDiscrepancyInterval > DISCREPANCY_TIME_THRESHOLD) {
         await context.storage.putNumber(`getPotDsrDataSync-${domainName}`, executionTimestamp)
         console.log(`Sending an alert about ${domainName} DSR discrepancy`)
+        await sendMessagesToSlack(messages, context, 'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL')
         await sendMessagesToPagerDuty(messages, context)
     }
 
-    await sendMessagesToSlack(messages, context, 'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL')
 }
