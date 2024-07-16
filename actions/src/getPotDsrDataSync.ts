@@ -8,14 +8,14 @@ import { Contract } from 'ethers'
 
 import { dsrAuthOracleAbi, potAbi } from './abis'
 
-import { createMainnetProvider, createProvider, sendMessagesToPagerDuty, sendMessagesToSlack } from './utils'
+import { createMainnetProvider, createProvider, /*sendMessagesToPagerDuty,*/ sendMessagesToSlack } from './utils'
 
 const MAKER_POT = '0x197E90f9FAD81970bA7976f33CbD77088E5D7cf7' as const
 const OPTIMISM_DSR_AUTH_ORACLE = '0x33a3aB524A43E69f30bFd9Ae97d1Ec679FF00B64' as const
 const BASE_DSR_AUTH_ORACLE = '0x2Dd2a2Fe346B5704380EfbF6Bd522042eC3E8FAe' as const
 const ARBITRUM_DSR_AUTH_ORACLE = '0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3' as const
 
-const DISCREPANCY_TIME_THRESHOLD = 600_000 as const  // 10 minutes in milliseconds
+const DISCREPANCY_TIME_THRESHOLD = 1_800_000 as const  // 30 minutes in milliseconds
 
 export const getPotDsrDataSync: ActionFn = async (context: Context, _: Event) => {
 
@@ -73,7 +73,8 @@ const handleDsrDiscrepancy = async (
         await context.storage.putNumber(`getPotDsrDataSync-${domainName}`, executionTimestamp)
         console.log(`Sending an alert about ${domainName} DSR discrepancy`)
         await sendMessagesToSlack(messages, context, 'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL')
-        await sendMessagesToPagerDuty(messages, context)
+        // TEMPORARILY DISABLED
+        // await sendMessagesToPagerDuty(messages, context)
     }
 
 }
