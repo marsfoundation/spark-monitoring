@@ -18,6 +18,7 @@ import {
     createProvider,
     sendMessagesToSlack,
 } from './utils'
+import { createGnosisscanAddressLink } from './utils/messages/createGnosisscanAddressLink'
 
 const AMB_BRIDGE_EXECUTOR = '0xc4218c1127cb24a0d6c1e7d25dc34e10f2625f5a' as const
 
@@ -52,6 +53,7 @@ ${createGnosisscanTxLink(transactionEvent.hash)}\`\`\``)
 🏛️🦉 Execute called on Gnosis Executor 🏛️🦉
 
 🪄 Spell${action.targets.length > 1 ? 's:' : ':'} ${action.targets.join(', ')}
+${action.targets.map((address: string) => createGnosisscanAddressLink(address)).join('\n')}
 
 ${createGnosisscanTxLink(transactionEvent.hash)}\`\`\``)
     }
