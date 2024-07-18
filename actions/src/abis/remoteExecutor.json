@@ -1,0 +1,121 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "actionsetId",
+                "type": "uint256"
+            }
+        ],
+        "name": "execute",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "actionsSetId",
+                "type": "uint256"
+            }
+        ],
+        "name": "getActionsSetById",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "address[]",
+                        "name": "targets",
+                        "type": "address[]"
+                    },
+                    {
+                        "internalType": "uint256[]",
+                        "name": "values",
+                        "type": "uint256[]"
+                    },
+                    {
+                        "internalType": "string[]",
+                        "name": "signatures",
+                        "type": "string[]"
+                    },
+                    {
+                        "internalType": "bytes[]",
+                        "name": "calldatas",
+                        "type": "bytes[]"
+                    },
+                    {
+                        "internalType": "bool[]",
+                        "name": "withDelegatecalls",
+                        "type": "bool[]"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "executionTime",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "executed",
+                        "type": "bool"
+                    },
+                    {
+                        "internalType": "bool",
+                        "name": "canceled",
+                        "type": "bool"
+                    }
+                ],
+                "internalType": "struct IExecutor.ActionsSet",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getActionsSetCount",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "actionsetId",
+                "type": "uint256"
+            }
+        ],
+        "name": "getCurrentState",
+        "outputs": [
+            {
+                "internalType": "enum IExecutor.ActionsSetState",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getGracePeriod",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
