@@ -63,7 +63,9 @@ const handleDsrDiscrepancy = async (
 🚨🔮🏛️ DSR ORACLE DISCREPANCY (${domainName.toUpperCase()}) 🚨🔮🏛️
 
 🏛️ Mainnet DSR: ${mainnetDsr.toString()}
-🔮 ${domainName} DSR: ${foreignDsr.toString()}\`\`\``]
+🔮 ${domainName} DSR: ${foreignDsr.toString()}
+
+📚 https://www.notion.so/phoenix-labs/XChain-DSR-Oracle-Sync-Playbook-007c5e48269844e4b93252b9cfc0de99\`\`\``]
 
     if (lastDiscrepancyInterval == 0) {
         await context.storage.putNumber(`getPotDsrDataSync-${domainName}`, executionTimestamp)
