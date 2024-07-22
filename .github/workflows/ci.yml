@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - sc-521-kill-switch-oracle
 
 jobs:
   deploy:
