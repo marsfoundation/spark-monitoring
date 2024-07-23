@@ -22,9 +22,9 @@ export const getKillSwitchOracleTrigger: ActionFn = async (context: Context, eve
     const killSwitchOracle = new Contract(KILL_SWITCH_ORACLE, killSwitchOracleAbi, provider)
 
     const logs = transactionEvent.logs
-		.filter(log => log.address.toLowerCase() == KILL_SWITCH_ORACLE.toLowerCase())
-		.map(log => killSwitchOracle.interface.parseLog(log))
-		.filter(log => log && log.name === 'Trigger')
+        .filter(log => log.address.toLowerCase() == KILL_SWITCH_ORACLE.toLowerCase())
+        .map(log => killSwitchOracle.interface.parseLog(log))
+        .filter(log => log && log.name === 'Trigger')
         .map(log => log && `\nOracle:    ${log.args[0]}\nThreshold: ${log.args[1]}\nAsnwer:    ${log.args[2]}\n`)
 
     await sendMessagesToSlack([`\`\`\`
