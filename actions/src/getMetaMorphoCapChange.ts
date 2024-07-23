@@ -7,7 +7,7 @@ import {
 
 import { Contract } from 'ethers'
 
-import { metaMoprhoAbi } from './abis'
+import { metaMorphoAbi } from './abis'
 
 import { createEtherscanTxLink, createMainnetProvider, formatBigInt, sendMessagesToSlack } from './utils'
 
@@ -17,15 +17,18 @@ export const getMetaMorphoCapChange: ActionFn = async (context: Context, event: 
     const transactionEvent = event as TransactionEvent
 
     const provider = await createMainnetProvider(context)
-    const metaMoprho = new Contract(META_MORPHO_VAULT, metaMoprhoAbi, provider)
+    const metaMorpho = new Contract(META_MORPHO_VAULT, metaMorphoAbi, provider)
 
     const logs = transactionEvent.logs
 		.filter(log => log.address.toLowerCase() == META_MORPHO_VAULT.toLowerCase())
-		.map(log => metaMoprho.interface.parseLog(log))
+		.map(log => metaMorpho.interface.parseLog(log))
 		.filter(log => log && log.name === 'SetCap')
-        .map(log => log && `\nMarket Id: ${log.args[1]}\nCap:       ${formatBigInt(log.args[2], 18)}\n`)
-    await sendMessagesToSlack([`\`\`\`
-// add a message here
+        .map(log => log && `\nMarket Id: ${log.args[1]}\nCap:       ${formatBigInt(log.args[2], 18)}\nhttps://morpho.blockanalitica.com/ethereum/markets/${log.args[1].slice(2)}\n`)
+
+    const messages = [`\`\`\`
+📈📉🦋 Meta Morpho Vault Cap Change 📈📉🦋
 ${logs.join('')}
-${createEtherscanTxLink(transactionEvent.hash)}\`\`\``], context, 'SPARKLEND_INFO_ALERTS_SLACK_WEBHOOK_URL')
+${createEtherscanTxLink(transactionEvent.hash)}\`\`\``]
+
+    await sendMessagesToSlack(messages, context, 'SPARKLEND_INFO_ALERTS_SLACK_WEBHOOK_URL')
 }
