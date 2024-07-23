@@ -9,12 +9,14 @@ import { Contract } from 'ethers'
 
 import { killSwitchOracleAbi } from './abis'
 
-import { createEtherscanTxLink, createMainnetProvider, sendMessagesToSlack } from './utils'
+import { createEtherscanTxLink, createMainnetProvider, sendMessagesToSlack, transactionAlreadyProcessed } from './utils'
 
 const KILL_SWITCH_ORACLE = '0x909A86f78e1cdEd68F9c2Fe2c9CD922c401abe82' as const
 
 export const getKillSwitchOracleTrigger: ActionFn = async (context: Context, event: Event) => {
     const transactionEvent = event as TransactionEvent
+
+    if (await transactionAlreadyProcessed('getKillSwitchOracleTrigger', context, transactionEvent)) return
 
     const provider = await createMainnetProvider(context)
     const killSwitchOracle = new Contract(KILL_SWITCH_ORACLE, killSwitchOracleAbi, provider)
