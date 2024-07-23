@@ -169,3 +169,10 @@ actions:
               - 1
             blocks: 5
 
+      monitor-kill-switch-oracle-trigger:
+        description: Monitors whether kill switch oracle is triggered
+        function: src/getKillSwitchOracleTrigger:getKillSwitchOracleTrigger
+        trigger:
+          type: alert
+          alert: {}
+
