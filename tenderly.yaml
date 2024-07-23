@@ -182,4 +182,3 @@ actions:
         trigger:
           type: alert
           alert: {}
-

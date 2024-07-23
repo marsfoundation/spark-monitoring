@@ -25,7 +25,7 @@ export const getKillSwitchOracleTrigger: ActionFn = async (context: Context, eve
         .filter(log => log.address.toLowerCase() == KILL_SWITCH_ORACLE.toLowerCase())
         .map(log => killSwitchOracle.interface.parseLog(log))
         .filter(log => log && log.name === 'Trigger')
-        .map(log => log && `\nOracle:    ${log.args[0]}\nThreshold: ${log.args[1]}\nAsnwer:    ${log.args[2]}\n`)
+        .map(log => log && `\nOracle:    ${log.args[0]}\nThreshold: ${log.args[1]}\nAnswer:    ${log.args[2]}\n`)
 
     await sendMessagesToSlack([`\`\`\`
 🚨🕹️💀 Trigger called on Kill Switch 🚨🕹️💀
