@@ -1,6 +1,7 @@
 export { default as aaveOracleAbi } from './aaveOracle.json'
 export { default as ambBridgeExecutorAbi } from './ambBridgeExecutor.json'
 export { default as capAutomatorAbi } from './capAutomator.json'
+export { default as d3mHubAbi } from './d3mHub.json'
 export { default as dsChiefAbi } from './dsChief.json'
 export { default as dsrAuthOracleAbi } from './dsrAuthOracle.json'
 export { default as erc20Abi } from './erc20.json'
