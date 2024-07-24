@@ -1,0 +1,643 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "daiJoin_",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            }
+        ],
+        "name": "Cage",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "ink",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "art",
+                "type": "uint256"
+            }
+        ],
+        "name": "Cull",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "usr",
+                "type": "address"
+            }
+        ],
+        "name": "Deny",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "usr",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amt",
+                "type": "uint256"
+            }
+        ],
+        "name": "Exit",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amt",
+                "type": "uint256"
+            }
+        ],
+        "name": "Fees",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "what",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "data",
+                "type": "address"
+            }
+        ],
+        "name": "File",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "what",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "data",
+                "type": "address"
+            }
+        ],
+        "name": "File",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            },
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "what",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "data",
+                "type": "uint256"
+            }
+        ],
+        "name": "File",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            }
+        ],
+        "name": "NoOp",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "usr",
+                "type": "address"
+            }
+        ],
+        "name": "Rely",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "wad",
+                "type": "uint256"
+            }
+        ],
+        "name": "Uncull",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amt",
+                "type": "uint256"
+            }
+        ],
+        "name": "Unwind",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amt",
+                "type": "uint256"
+            }
+        ],
+        "name": "Wind",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            }
+        ],
+        "name": "cage",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            }
+        ],
+        "name": "cull",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            }
+        ],
+        "name": "culled",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "daiJoin",
+        "outputs": [
+            {
+                "internalType": "contract DaiJoinLike_1",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "usr",
+                "type": "address"
+            }
+        ],
+        "name": "deny",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "end",
+        "outputs": [
+            {
+                "internalType": "contract EndLike_1",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            }
+        ],
+        "name": "exec",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "address",
+                "name": "usr",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "wad",
+                "type": "uint256"
+            }
+        ],
+        "name": "exit",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "what",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "uint256",
+                "name": "data",
+                "type": "uint256"
+            }
+        ],
+        "name": "file",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "what",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "address",
+                "name": "data",
+                "type": "address"
+            }
+        ],
+        "name": "file",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "bytes32",
+                "name": "what",
+                "type": "bytes32"
+            },
+            {
+                "internalType": "address",
+                "name": "data",
+                "type": "address"
+            }
+        ],
+        "name": "file",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "name": "ilks",
+        "outputs": [
+            {
+                "internalType": "contract ID3MPool",
+                "name": "pool",
+                "type": "address"
+            },
+            {
+                "internalType": "contract ID3MPlan",
+                "name": "plan",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "tau",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "culled",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "tic",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "locked",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            }
+        ],
+        "name": "plan",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            }
+        ],
+        "name": "pool",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "usr",
+                "type": "address"
+            }
+        ],
+        "name": "rely",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            }
+        ],
+        "name": "tau",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            }
+        ],
+        "name": "tic",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "ilk",
+                "type": "bytes32"
+            }
+        ],
+        "name": "uncull",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "vat",
+        "outputs": [
+            {
+                "internalType": "contract VatLike_1",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "vow",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "name": "wards",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
