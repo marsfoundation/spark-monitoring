@@ -176,3 +176,9 @@ actions:
           type: alert
           alert: {}
 
+      monitor-sparklend-art-changes:
+        description: Monitors whether sparklend art changes in vat
+        function: src/getSparklendArtChange:getSparklendArtChange
+        trigger:
+          type: alert
+          alert: {}
