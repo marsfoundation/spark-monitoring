@@ -22,9 +22,9 @@ export const getMetaMorphoCapChange: ActionFn = async (context: Context, event: 
     const morpho = new Contract(MORPHO, morphoAbi, provider)
 
     const setCapLogs = transactionEvent.logs
-		.filter(log => log.address.toLowerCase() == META_MORPHO_VAULT.toLowerCase())
-		.map(log => metaMorpho.interface.parseLog(log))
-		.filter(log => log && log.name === 'SetCap')
+        .filter(log => log.address.toLowerCase() == META_MORPHO_VAULT.toLowerCase())
+        .map(log => metaMorpho.interface.parseLog(log))
+        .filter(log => log && log.name === 'SetCap')
 
     const marketIds = setCapLogs.map(log => log && log.args[1])
 
