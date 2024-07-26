@@ -215,11 +215,5 @@ actions:
         description: Monitors whether aggregators of oracles used in KillSwitch changed
         function: src/getCurrentAggregators:getCurrentAggregators
         trigger:
-          type: transaction
-          transaction:
-                status:
-                  - mined
-                filters:
-                  - network: 1
-                    status: success
-                    to: 0x2364259ACD20Bd2A8dEfDc628f4099302449fd62
+          type: alert
+          alert: {}
