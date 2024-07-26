@@ -189,3 +189,24 @@ actions:
         trigger:
           type: alert
           alert: {}
+
+      monitor-dsr-auth-oracle-refresh-arbitrum:
+        description: Monitors whether the pot data was refreshed on Arbitrum
+        function: src/getDSRAuthOracleRefresh:getDSRAuthOracleRefreshArbitrum
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-dsr-auth-oracle-refresh-bas:
+        description: Monitors whether the pot data was refreshed on Base
+        function: src/getDSRAuthOracleRefresh:getDSRAuthOracleRefreshBase
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-dsr-auth-oracle-refresh-optimism:
+        description: Monitors whether the pot data was refreshed on Optimism
+        function: src/getDSRAuthOracleRefresh:getDSRAuthOracleRefreshOptimism
+        trigger:
+          type: alert
+          alert: {}
