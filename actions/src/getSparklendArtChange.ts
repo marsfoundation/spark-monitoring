@@ -31,6 +31,7 @@ export const getSparklendArtChange: ActionFn = async (context: Context, event: E
         .filter(log => log.address.toLowerCase() == D3M_HUB.toLowerCase())
         .map(log => d3mHub.interface.parseLog(log))
         .filter(log => log && (log.name === 'Wind' || log.name === 'Unwind'))
+        .filter(log => log && log.args[0].toLowerCase() === ILK.toLowerCase())
         .map(log => log && log.name)
 
     if (logs.length === 0) return
