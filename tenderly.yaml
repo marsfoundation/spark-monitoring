@@ -197,7 +197,7 @@ actions:
           type: alert
           alert: {}
 
-      monitor-dsr-auth-oracle-refresh-bas:
+      monitor-dsr-auth-oracle-refresh-base:
         description: Monitors whether the pot data was refreshed on Base
         function: src/getDSRAuthOracleRefresh:getDSRAuthOracleRefreshBase
         trigger:
