@@ -194,19 +194,43 @@ actions:
         description: Monitors whether the pot data was refreshed on Arbitrum
         function: src/getDSRAuthOracleRefresh:getDSRAuthOracleRefreshArbitrum
         trigger:
-          type: alert
-          alert: {}
+          type: transaction
+          transaction:
+            status:
+              - mined
+            filters:
+              - network: 42161
+                eventEmitted:
+                  contract:
+                    address: 0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3
+                  name: SetPotData
 
       monitor-dsr-auth-oracle-refresh-base:
         description: Monitors whether the pot data was refreshed on Base
         function: src/getDSRAuthOracleRefresh:getDSRAuthOracleRefreshBase
         trigger:
-          type: alert
-          alert: {}
+          type: transaction
+          transaction:
+            status:
+              - mined
+            filters:
+              - network: 8453
+                eventEmitted:
+                  contract:
+                    address: 0x2Dd2a2Fe346B5704380EfbF6Bd522042eC3E8FAe
+                  name: SetPotData
 
       monitor-dsr-auth-oracle-refresh-optimism:
         description: Monitors whether the pot data was refreshed on Optimism
         function: src/getDSRAuthOracleRefresh:getDSRAuthOracleRefreshOptimism
         trigger:
-          type: alert
-          alert: {}
+          type: transaction
+          transaction:
+            status:
+              - mined
+            filters:
+              - network: 10
+                eventEmitted:
+                  contract:
+                    address: 0x33a3aB524A43E69f30bFd9Ae97d1Ec679FF00B64
+                  name: SetPotData
