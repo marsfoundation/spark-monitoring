@@ -234,3 +234,10 @@ actions:
                   contract:
                     address: 0x33a3aB524A43E69f30bFd9Ae97d1Ec679FF00B64
                   name: SetPotData
+
+      monitor-current-price-source-aggregators:
+        description: Monitors whether aggregators of oracles used in KillSwitch changed
+        function: src/getCurrentAggregators:getCurrentAggregators
+        trigger:
+          type: alert
+          alert: {}
