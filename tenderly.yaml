@@ -182,3 +182,10 @@ actions:
         trigger:
           type: alert
           alert: {}
+
+      monitor-meta-morpho-cap-change:
+        description: Monitors whether there is a cap change in the meta morpho vault
+        function: src/getMetaMorphoCapChange:getMetaMorphoCapChange
+        trigger:
+          type: alert
+          alert: {}
