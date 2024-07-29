@@ -4,30 +4,29 @@ This repo contains a set of Tenderly Web3 actions that are used to monitor contr
 
 ## Summary of Tenderly Monitoring Actions
 
-| Monitor                           | Trigger(s) and Config                                                                                                | Logic |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----- |
-| `cleanTransactionRegistry`        | Runs every 100 blocks.<br><br>Active on mainnet and Gnosis.                                                          |       |
-| `getAllReservesAssetLiability`    | Runs every 5 blocks.<br><br>Active on mainnet for SparkLend and AAVE.                                                |       |
-| `getAssetPriceDeviance`           | Runs every 10 blocks.<br><br>Active on mainnet for SparkLend oracle.                                                 |       |
-| `getCapAutomatorUpdate`           | Runs on alerts (TODO).<br><br>Active on mainnet.                                                                     |       |
-| `getConfigurationChangeAave`      | Runs on alerts (TODO).<br><br>Active on mainnet.                                                                     |       |
-| `getCurrentAggregators`           | Runs on alerts (TODO).<br><br>Active on mainnet.                                                                     |       |
-| `getDSRAuthOracleRefresh`         | Runs on `SetPotData` event emission on domain receivers for DSROracle.<br><br>Active on Arbitrum, Base and Optimism. |       |
-| `getExecOnSparkProxy`             | Runs on alerts (TODO).<br><br>Active on mainnet (true?)                                                              |       |
-| `getGnosisExecutorOperations`     | Runs on alerts (TODO).<br><br>Active on Gnosis (true?)                                                               |       |
-| `getHighGasTransaction`           | Runs on alerts (TODO).<br><br>Active on mainnet.                                                                     |       |
-| `getKillSwitchOracleTrigger`      | Runs on alerts (TODO).<br><br>Active on mainnet.                                                                     |       |
-| `getKillSwitchOraclesState`       | Runs every 5 blocks.<br><br>Active on mainnet.                                                                       |       |
-| `getLiftOnDSChief`                | Runs on alerts (TODO).<br><br>Active on mainnet.                                                                     |       |
-| `getLiquidationSparkLend`         | Runs on alerts (TODO).<br><br>Active on mainnet and Gnosis.                                                          |       |
-| `getMetaMorphoCapChange`          | Runs on alerts (TODO).<br><br>Active on mainnet.                                                                     |       |
-| `getPotDsrDataSync`               | Runs every 5 blocks.<br><br>Active on mainnet (true?)                                                                |       |
-| `getProtocolInteractionSparkLend` | Runs on alerts (TODO).<br><br>Active on mainnet and Gnosis.                                                          |       |
-| `getSparklendArtChange`           | Runs on alert (TODO).<br><br>Active on mainnet.                                                                      |       |
-| `getSpellsReadyToExecute`         | Runs every 5 blocks.<br><br>Active on Gnosis.                                                                        |       |
-| `getUserInfo`                     | Runs on alerts (TODO).<br><br>Active on mainnet for SparkLend and AAVE.                                              |       |
+| Monitor                           | Trigger(s) and Config                                                                                                                                                                                                                                | Logic |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| `cleanTransactionRegistry`        | Runs every 100 blocks.<br><br>Active on mainnet and Gnosis.<br>`clean-transaction-registry-mainnet` `clean-transaction-registry-gnosis`                                                                                                              |       |
+| `getAllReservesAssetLiability`    | Runs every 5 blocks.<br><br>Active on mainnet for SparkLend and AAVE.<br>`monitor-asset-liabilities` `monitor-asset-liabilities-aave`                                                                                                                |       |
+| `getAssetPriceDeviance`           | Runs every 10 blocks.<br><br>Active on mainnet for SparkLend oracle.<br>`monitor-oracle-price-deviance`                                                                                                                                              |       |
+| `getCapAutomatorUpdate`           | Runs on alerts.<br>Triggered by `UpdateSupplyCap` and `UpdateBorrowCap` emitted in CapAutomator.<br><br>Active on mainnet.<br>`monitor-cap-automator-cap-updates`                                                                                    |       |
+| `getConfigurationChangeAave`      | Runs on alerts.<br>Triggered events emitted in PoolConfigurator and `AssetSourceUpdated` emitted in AaveOracle<br><br>Active on mainnet for Aave.<br>`monitor-aave-config-changes`                                                                   |       |
+| `getCurrentAggregators`           | Runs on alerts.<br>Triggered by `confirmAggregator` function called in sthETH-ETH and WBTC-BTC Chainlink Oracles<br><br>Active on mainnet.<br>`monitor-current-price-source-aggregators`                                                             |       |
+| `getDSRAuthOracleRefresh`         | Runs on `SetPotData` event emission on domain receivers for DSROracle.<br><br>Active on Arbitrum, Base and Optimism.<br>`monitor-dsr-auth-oracle-refresh-arbitrum` `monitor-dsr-auth-oracle-refresh-base` `monitor-dsr-auth-oracle-refresh-optimism` |       |
+| `getExecOnSparkProxy`             | Runs on alerts.<br>Triggered by `exec` function called on Spark SubProxy<br><br>Active on mainnet.<br>`monitor-exec-on-spark-proxy`                                                                                                                  |       |
+| `getGnosisExecutorOperations`     | Runs on alerts.<br>Triggered by `queue` and `execute` functions called on Gnosis Governance Executor<br><br>Active on Gnosis.<br>`monitor-gnosis-bridge-executor`                                                                                    |       |
+| `getHighGasTransaction`           | Runs on alerts.<br>Triggered by `FlashLoan`, `Supply`, `Borrow`, `Repay`, `Withdraw` and `LiquidationCall` emitted on Pool<br><br>Active on mainnet.<br>`monitor-high-transaction-gas`                                                               |       |
+| `getKillSwitchOracleTrigger`      | Runs on alerts.<br>Triggered by `Trigger` event emitted on KillSwitchOracle<br><br>Active on mainnet.<br>`monitor-kill-switch-oracle-trigger`                                                                                                        |       |
+| `getKillSwitchOraclesState`       | Runs every 5 blocks.<br><br>Active on mainnet.<br>`monitor-kill-switch-oracle`                                                                                                                                                                       |       |
+| `getLiftOnDSChief`                | Runs on alerts.<br>Triggered by `lift` function called on DSChief<br><br>Active on mainnet.<br>`monitor-lift-on-dschief`                                                                                                                             |       |
+| `getLiquidationSparkLend`         | Runs on alerts.<br>Triggered by `LiquidationCall` event emitted on Pool<br><br>Active on mainnet and Gnosis.<br>`monitor-user-liquidations-sparklend` `monitor-user-liquidations-sparklend-gnosis`                                                   |       |
+| `getMetaMorphoCapChange`          | Runs on alerts.<br>Triggered by `SetCap` emitted in DAI MetaMorpho Vault.<br><br>Active on mainnet.<br>`monitor-meta-morpho-cap-change`                                                                                                              |       |
+| `getPotDsrDataSync`               | Runs every 5 blocks.<br><br>Active on mainnet.<br>`monitor-pot-dsr-data-sync`                                                                                                                                                                        |       |
+| `getProtocolInteractionSparkLend` | Runs on alerts.<br>Triggered by `Supply`, `Borrow`, `Repay` and `Withdraw` emitted on Pool<br><br>Active on mainnet and Gnosis.<br>`monitor-protocol-interactions` `monitor-protocol-interactions-gnosis`                                            |       |
+| `getSparklendArtChange`           | Runs on alert. Triggered by `exec` function called on D3MHub<br><br>Active on mainnet.<br>`monitor-sparklend-art-changes`                                                                                                                            |       |
+| `getSpellsReadyToExecute`         | Runs every 5 blocks.<br><br>Active on Gnosis.<br>`monitor-not-executed-spells`                                                                                                                                                                       |       |
+| `getUserInfo`                     | Runs on alerts.<br>Triggered by `FlashLoan`, `Supply`, `Borrow`, `Repay`, `Withdraw` and `LiquidationCall` emitted on Pool<br><br>Active on mainnet for SparkLend and AAVE.<br>`monitor-user-health` `monitor-user-health-aave`                      |       |
 
 
 ***
 *The IP in this repository was assigned to Mars SPC Limited in respect of the MarsOne SP*
-
