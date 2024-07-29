@@ -5,4 +5,239 @@ actions:
     runtime: v1
     sources: actions
     specs:
+      monitor-user-health:
+        description: Checks user's health factors after they interact with the protocol.
+        function: src/getUserInfo:getUserInfoSparkLend
+        trigger:
+          type: alert
+          alert: {}
 
+      monitor-user-health-aave:
+        description: Checks Aave user's health factors after they interact with the protocol.
+        function: src/getUserInfo:getUserInfoAave
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-user-liquidations-sparklend:
+        description: Monitors liquidations in SparkLend protocol
+        function: src/getLiquidationSparkLend:getLiquidationSparkLendMainnet
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-user-liquidations-sparklend-gnosis:
+        description: Monitors liquidations in Gnosis instance SparkLend protocol
+        function: src/getLiquidationSparkLend:getLiquidationSparkLendGnosis
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-asset-liabilities:
+        description: Checks asset liability matching for each reserve.
+        function: src/getAllReservesAssetLiability:getAllReservesAssetLiabilitySparkLend
+        trigger:
+          type: block
+          block:
+            network:
+              - 1
+            blocks: 5
+
+      monitor-asset-liabilities-aave:
+        description: Checks asset liability matching for each reserve in Aave protocol.
+        function: src/getAllReservesAssetLiability:getAllReservesAssetLiabilityAave
+        trigger:
+          type: block
+          block:
+            network:
+              - 1
+            blocks: 5
+
+      monitor-protocol-interactions:
+        description: Monitors interactions with the Sparklend protocol that involve funds of amounts at least $1.000.000 worth of assets
+        function: src/getProtocolInteractionSparkLend:getProtocolInteractionSparkLendMainnet
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-protocol-interactions-gnosis:
+        description: Monitors interactions with the Gnosis instance of Sparklend protocol that involve funds of amounts at least $100.000 worth of assets
+        function: src/getProtocolInteractionSparkLend:getProtocolInteractionSparkLendGnosis
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-aave-config-changes:
+        description: Reports changes to the Aave V3 protocol
+        function: src/getConfigurationChangeAave:getConfigurationChangeAave
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-oracle-price-deviance:
+        description: Checks if Spark oracle is not returning prices far different than an off-chain source.
+        function: src/getAssetPriceDeviance:getAssetPriceDeviance
+        trigger:
+          type: block
+          block:
+            network:
+              - 1
+            blocks: 10
+
+      monitor-high-transaction-gas:
+        description: Monitors transactions and alerts on high gas transactions
+        function: src/getHighGasTransaction:getHighGasTransaction
+        trigger:
+          type: alert
+          alert: {}
+
+      clean-transaction-registry-mainnet:
+        description: Keeps size of the storage in check, by removing transactions older than 100 blocks from the registry.
+        function: src/cleanTransactionRegistry:cleanTransactionRegistryMainnet
+        trigger:
+          type: block
+          block:
+            network:
+              - 1
+            blocks: 100
+
+      clean-transaction-registry-gnosis:
+        description: Keeps size of the storage in check, by removing transactions older than 100 blocks from the registry.
+        function: src/cleanTransactionRegistry:cleanTransactionRegistryGnosis
+        trigger:
+          type: block
+          block:
+            network:
+              - 100
+            blocks: 100
+
+      monitor-lift-on-dschief:
+        description: Monitors lift calls on DS Chief Maker Governance contract
+        function: src/getLiftOnDSChief:getLiftOnDSChief
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-exec-on-spark-proxy:
+        description: Monitors exec calls on Spark Protocol SubProxy contract
+        function: src/getExecOnSparkProxy:getExecOnSparkProxy
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-gnosis-bridge-executor:
+        description: Monitors process of queuing and executing on Gnosis Chain
+        function: src/getGnosisExecutorOperations:getGnosisExecutorOperations
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-cap-automator-cap-updates:
+        description: Monitors supply and borrow cap updates executed through CapAutomator contract
+        function: src/getCapAutomatorUpdate:getCapAutomatorUpdate
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-pot-dsr-data-sync:
+        description: Monitors whether AuthDsrOracle data is in sync with Pot
+        function: src/getPotDsrDataSync:getPotDsrDataSync
+        trigger:
+          type: block
+          block:
+            network:
+              - 1
+            blocks: 5
+
+      monitor-not-executed-spells:
+        description: Monitors whether there are spells ready to execute
+        function: src/getSpellsReadyToExecute:getSpellsReadyToExecuteGnosis
+        trigger:
+          type: block
+          block:
+            network:
+              - 1
+            blocks: 5
+
+      monitor-kill-switch-oracle:
+        description: Monitors whether kill switch oracle should be triggered
+        function: src/getKillSwitchOraclesState:getKillSwitchOraclesState
+        trigger:
+          type: block
+          block:
+            network:
+              - 1
+            blocks: 5
+
+      monitor-kill-switch-oracle-trigger:
+        description: Monitors whether kill switch oracle is triggered
+        function: src/getKillSwitchOracleTrigger:getKillSwitchOracleTrigger
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-sparklend-art-changes:
+        description: Monitors whether sparklend art changes in vat
+        function: src/getSparklendArtChange:getSparklendArtChange
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-meta-morpho-cap-change:
+        description: Monitors whether there is a cap change in the meta morpho vault
+        function: src/getMetaMorphoCapChange:getMetaMorphoCapChange
+        trigger:
+          type: alert
+          alert: {}
+
+      monitor-dsr-auth-oracle-refresh-arbitrum:
+        description: Monitors whether the pot data was refreshed on Arbitrum
+        function: src/getDSRAuthOracleRefresh:getDSRAuthOracleRefreshArbitrum
+        trigger:
+          type: transaction
+          transaction:
+            status:
+              - mined
+            filters:
+              - network: 42161
+                eventEmitted:
+                  contract:
+                    address: 0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3
+                  name: SetPotData
+
+      monitor-dsr-auth-oracle-refresh-base:
+        description: Monitors whether the pot data was refreshed on Base
+        function: src/getDSRAuthOracleRefresh:getDSRAuthOracleRefreshBase
+        trigger:
+          type: transaction
+          transaction:
+            status:
+              - mined
+            filters:
+              - network: 8453
+                eventEmitted:
+                  contract:
+                    address: 0x2Dd2a2Fe346B5704380EfbF6Bd522042eC3E8FAe
+                  name: SetPotData
+
+      monitor-dsr-auth-oracle-refresh-optimism:
+        description: Monitors whether the pot data was refreshed on Optimism
+        function: src/getDSRAuthOracleRefresh:getDSRAuthOracleRefreshOptimism
+        trigger:
+          type: transaction
+          transaction:
+            status:
+              - mined
+            filters:
+              - network: 10
+                eventEmitted:
+                  contract:
+                    address: 0x33a3aB524A43E69f30bFd9Ae97d1Ec679FF00B64
+                  name: SetPotData
+
+      monitor-current-price-source-aggregators:
+        description: Monitors whether aggregators of oracles used in KillSwitch changed
+        function: src/getCurrentAggregators:getCurrentAggregators
+        trigger:
+          type: alert
+          alert: {}
