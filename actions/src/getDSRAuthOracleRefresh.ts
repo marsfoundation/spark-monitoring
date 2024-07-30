@@ -9,7 +9,7 @@ import { Contract } from 'ethers'
 
 import { dsrAuthOracleAbi } from './abis'
 
-import { createMainnetProvider, formatTimestamp, sendMessagesToSlack, transactionAlreadyProcessed } from './utils'
+import { createMainnetProvider, formatDsr, formatTimestamp, sendMessagesToSlack, transactionAlreadyProcessed } from './utils'
 
 const getDSRAuthOracleRefresh = (domainName: string, dsrAuthOracleAddress: string, explorerTxLink: string): ActionFn  => async (context: Context, event: Event) => {
     const transactionEvent = event as TransactionEvent
@@ -30,7 +30,7 @@ const getDSRAuthOracleRefresh = (domainName: string, dsrAuthOracleAddress: strin
     if(log) {
         const message = [`\`\`\`
 🔮💰 DSR Oracle refreshed on ${domainName} 🔮💰
-dsr: ${log.args[0][0].toString()}
+dsr: ${formatDsr(log.args[0][0].toString())}
 chi: ${log.args[0][1].toString()}
 rho: ${formatTimestamp(Number(log.args[0][2]))}
 
