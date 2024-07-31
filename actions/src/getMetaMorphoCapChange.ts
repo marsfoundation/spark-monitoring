@@ -43,5 +43,5 @@ export const getMetaMorphoCapChange: ActionFn = async (context: Context, event: 
 ${messageBits.join('')}
 ${createEtherscanTxLink(transactionEvent.hash)}\`\`\``]
 
-    await sendMessagesToSlack(messages, context, 'SPARKLEND_INFO_ALERTS_SLACK_WEBHOOK_URL')
+    await sendMessagesToSlack(messages, context, 'SPARKLEND_INFO_SLACK_WEBHOOK_URL')
 }
