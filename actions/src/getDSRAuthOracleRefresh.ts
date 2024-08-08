@@ -9,9 +9,16 @@ import { Contract } from 'ethers'
 
 import { dsrAuthOracleAbi } from './abis'
 
-import { createEtherscanTxLink, createMainnetProvider, sendMessagesToSlack, transactionAlreadyProcessed } from './utils'
+import {
+    createMainnetProvider,
+    formatChi,
+    formatDsr,
+    formatTimestamp,
+    sendMessagesToSlack,
+    transactionAlreadyProcessed,
+} from './utils'
 
-const getDSRAuthOracleRefresh = (domainName: string, dsrAuthOracleAddress: string): ActionFn  => async (context: Context, event: Event) => {
+const getDSRAuthOracleRefresh = (domainName: string, dsrAuthOracleAddress: string, explorerTxLink: string): ActionFn  => async (context: Context, event: Event) => {
     const transactionEvent = event as TransactionEvent
 
     if (await transactionAlreadyProcessed(`getDSRAuthOracleRefresh-${domainName}`, context, transactionEvent)) return
@@ -30,16 +37,16 @@ const getDSRAuthOracleRefresh = (domainName: string, dsrAuthOracleAddress: strin
     if(log) {
         const message = [`\`\`\`
 🔮💰 DSR Oracle refreshed on ${domainName} 🔮💰
-dsr: ${log.args[0][0].toString()}
-chi: ${log.args[0][1].toString()}
-rho: ${log.args[0][2].toString()}
+dsr: ${formatDsr(log.args[0][0].toString())}
+chi: ${formatChi(log.args[0][1].toString())}
+rho: ${formatTimestamp(Number(log.args[0][2]))}
 
-${createEtherscanTxLink(transactionEvent.hash)}\`\`\``]
+${explorerTxLink.replace('<TX_HASH>', transactionEvent.hash)}\`\`\``]
 
-        await sendMessagesToSlack(message, context, 'SPARKLEND_ALERTS_SLACK_WEBHOOK_URL')
+        await sendMessagesToSlack(message, context, 'SPARKLEND_INFO_SLACK_WEBHOOK_URL')
     }
 }
 
-export const getDSRAuthOracleRefreshArbitrum = getDSRAuthOracleRefresh('Arbitrum', '0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3')
-export const getDSRAuthOracleRefreshBase = getDSRAuthOracleRefresh('Base', '0x2Dd2a2Fe346B5704380EfbF6Bd522042eC3E8FAe')
-export const getDSRAuthOracleRefreshOptimism = getDSRAuthOracleRefresh('Optimism', '0x33a3aB524A43E69f30bFd9Ae97d1Ec679FF00B64')
+export const getDSRAuthOracleRefreshArbitrum = getDSRAuthOracleRefresh('Arbitrum', '0xE206AEbca7B28e3E8d6787df00B010D4a77c32F3', 'https://arbiscan.io/tx/<TX_HASH>')
+export const getDSRAuthOracleRefreshBase = getDSRAuthOracleRefresh('Base', '0x2Dd2a2Fe346B5704380EfbF6Bd522042eC3E8FAe', 'https://basescan.org/tx/<TX_HASH>')
+export const getDSRAuthOracleRefreshOptimism = getDSRAuthOracleRefresh('Optimism', '0x33a3aB524A43E69f30bFd9Ae97d1Ec679FF00B64', 'https://optimistic.etherscan.io/tx/<TX_HASH>')
